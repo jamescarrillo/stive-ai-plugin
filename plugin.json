@@ -1,0 +1,10 @@
+{
+  "name": "stive-ai",
+  "description": "Enterprise SDLC automation agents for Spring Boot, Quarkus, Jira and Architecture Governance",
+  "version": "1.0.0",
+  "author": {
+    "name": "James Carrillo"
+  },
+  "agents": "agents/",
+  "skills": "skills/"
+}

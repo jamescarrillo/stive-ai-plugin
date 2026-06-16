@@ -2,7 +2,7 @@
 
 Plugin de **agentes de IA para el SDLC de microservicios Java** (Spring Boot 3.x / Quarkus 3.x LTS), con arquitectura hexagonal, DDD táctico y APIs BIAN. Se instala como **Agent Plugin de VS Code** (preview) apuntando al código fuente de este repositorio.
 
-> El manifiesto `plugin.json` declara las carpetas `agents/` y `skills/`. VS Code descubre como **agente seleccionable en el picker de Copilot** a cada `*.agent.md` ubicado directamente en `agents/`. Por eso este README vive en la raíz: cualquier `.md` dentro de `agents/` aparecería en el picker como un agente más.
+> El manifiesto `plugin.json` declara, en arrays, la **carpeta de cada agente** y las **raíces de skills**. VS Code registra como agente **cada `.md`** dentro de una carpeta de agente declarada; por eso los entries que deben quedar fuera del picker llevan `user-invocable: false`. Seleccionables en el picker de Copilot: solo `stive-sdlc` y `stive-auditor`. Ver **Reglas de descubrimiento** más abajo.
 
 ## Instalación (install from source)
 
@@ -36,7 +36,7 @@ HU de migración       → spring-to-quarkus
 ## Estructura del repositorio
 
 ```
-plugin.json                      ← Manifiesto: declara cada carpeta de agente, skills/ y .mcp.json
+plugin.json                      ← Manifiesto: declara las carpetas de agentes, las raíces de skills y .mcp.json
 .mcp.json                        ← Config MCP: atlassian (JIRA remoto) + github (npx)
 agents/
   stive-sdlc/                    ← Orquestador SDLC (PICKER)
@@ -61,7 +61,7 @@ skills/                          ← Skills invocables por nombre (raíz + categ
   quarkus/     → quarkus-migrator-from-spring
 docs/                            ← Lineamientos compartidos (arquitectura, estándares, BIAN) que consumen los agentes
 templates/                       ← Plantillas (HU, etc.)
-scripts/                         ← jira_mcp_server.py (MCP JIRA local, opcional para pruebas en CLI)
+scripts/                         ← validate.py (lint de convenciones) · jira_mcp_server.py (MCP JIRA local de pruebas)
 ```
 
 ### Convención de agentes (escalable)

@@ -8,6 +8,28 @@ Plugin de **agentes de IA para el SDLC de microservicios Java** (Spring Boot 3.x
 
 Pasa este repositorio al instalador de Agent Plugins de VS Code. El plugin queda registrado bajo `~/.copilot/installed-plugins/` y sus agentes aparecen en el picker del chat de Copilot.
 
+## Servidores MCP
+
+El plugin declara dos servidores MCP en **`.mcp.json`** (enlazado desde `plugin.json` con `"mcpServers": ".mcp.json"`):
+
+| Servidor | Tipo | Para qué | Cómo arranca |
+|---|---|---|---|
+| `atlassian` | **Remoto** (HTTP, hosted por Atlassian) | JIRA: leer la HU, transicionar estados | No se arranca: VS Code se conecta al endpoint remoto y abre **OAuth en el navegador** la primera vez. |
+| `github` | **Local (npx)** | Crear PR, push, ramas | VS Code lanza `npx` **bajo demanda** cuando un agente lo invoca. |
+
+> No hay que arrancar los MCP a mano — VS Code gestiona su ciclo de vida. El remoto está siempre disponible (solo te autenticas); el de `npx` se levanta solo al usarlo.
+
+### Configuración previa (una vez)
+
+1. **GitHub (npx):** reemplaza `<TU_GITHUB_PAT>` en `.mcp.json` por tu Personal Access Token (scope `repo`). La primera invocación descarga el paquete vía npx, así que necesitas **Node.js** instalado.
+2. **JIRA (remoto):** no lleva token en el archivo. Al primer uso (ej. `getVisibleJiraProjects`), VS Code abre el **flujo OAuth de Atlassian** en el navegador para que autorices.
+
+### Verificar que está listo
+
+Pídele a `stive-sdlc`: **`"verifica requisitos"`** → corre el pre-flight (`agents/stive-sdlc/preflight.md`), que comprueba que el MCP de Atlassian sea alcanzable y que Node.js esté disponible para el de GitHub.
+
+> **Nota sobre el paquete de GitHub:** `@modelcontextprotocol/server-github` está **deprecado** (movido a `github/github-mcp-server`), pero sigue funcionando vía npx para las operaciones que usa Stive (PR, push, ramas). Si en el futuro quieres dejar npx, la alternativa oficial es el MCP remoto `https://api.githubcopilot.com/mcp` o el binario `github-mcp-server` (Docker).
+
 ## Agentes del picker
 
 | Agente | Archivo | Propósito |

@@ -5,7 +5,13 @@
   "author": {
     "name": "James Carrillo"
   },
-  "agents": ["agents/", "agents/stive-sdlc"],
+  "agents": [
+    "agents/stive-sdlc",
+    "agents/stive-auditor",
+    "agents/spring-engineer",
+    "agents/quarkus-engineer",
+    "agents/spring-to-quarkus"
+  ],
   "skills": "skills/",
   "mcpServers": ".mcp.json"
 }

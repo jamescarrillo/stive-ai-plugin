@@ -1,6 +1,7 @@
 ---
 name: restructure-guide
 description: Guía paso a paso para migrar un proyecto Spring Boot tradicional a Quarkus con restructuración a arquitectura hexagonal (Opción B del agente spring-to-quarkus).
+user-invocable: false
 ---
 
 # Guía: Migración + Restructuración a Hexagonal Quarkus (Opción B)

@@ -1,6 +1,12 @@
+---
+name: quarkus-engineer-templates-traditional
+description: Material de soporte de quarkus-engineer (no es un agente seleccionable).
+user-invocable: false
+---
+
 # Quarkus Engineer — Templates: Modo Tradicional / Adaptación
 
-> Referenciado por `agents/quarkus-engineer.agent.md`. Aplica en `projectStructure` = `traditional` o `mixed`: respeta la estructura existente del proyecto.
+> Referenciado por `agents/quarkus-engineer/quarkus-engineer.agent.md`. Aplica en `projectStructure` = `traditional` o `mixed`: respeta la estructura existente del proyecto.
 
 ## Templates: Modo Adaptación Tradicional
 

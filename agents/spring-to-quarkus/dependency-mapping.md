@@ -1,3 +1,9 @@
+---
+name: spring-to-quarkus-dependency-mapping
+description: Material de soporte de spring-to-quarkus (no es un agente seleccionable).
+user-invocable: false
+---
+
 # Dependency Mapping
 
 ## Spring Boot → Quarkus

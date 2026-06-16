@@ -1,6 +1,12 @@
+---
+name: spring-engineer-templates-traditional
+description: Material de soporte de spring-engineer (no es un agente seleccionable).
+user-invocable: false
+---
+
 # Spring Engineer — Templates: Modo Tradicional / Adaptación
 
-> Referenciado por `agents/spring-engineer.agent.md`. Aplica en `projectStructure` = `traditional` o `mixed`: respeta la estructura existente del proyecto (no impone hexagonal).
+> Referenciado por `agents/spring-engineer/spring-engineer.agent.md`. Aplica en `projectStructure` = `traditional` o `mixed`: respeta la estructura existente del proyecto (no impone hexagonal).
 
 ### Modo Adaptación — Proyecto Tradicional o Hexagonal con estructura propia
 

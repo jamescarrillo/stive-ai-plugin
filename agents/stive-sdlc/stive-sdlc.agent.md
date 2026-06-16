@@ -179,7 +179,7 @@ Sigue el procedimiento de **`agents/stive-sdlc/detection.md`**: detecta `framewo
 ```
 getJiraIssueDetails(issueIdOrKey: "HU-XXX")
 → Parsear título, descripción (ADF), criterios de aceptación
-→ Escribir .github/specs/HU-XXX.md
+→ Escribir .github/specs/HU-XXX.md usando la estructura base de `templates/HU-TEMPLATE.md`
 → Actualizar .github/specs/.metadata/HU-XXX.json (cargar el existente de PASO 2 y añadir):
     status: "spec_generated"
     atlassian_base_url: host extraído del campo `self`/url del issue devuelto por el MCP
@@ -247,44 +247,40 @@ Checkpoint 2:
 
 ### Etapa 3: Plan → Código
 
-Leer el sub-agente desde tasks.json e **invocarlo por nombre** (vía el tool `agent`):
+> **El sub-agente corre en contexto AISLADO** — no hereda esta conversación ni las variables de `stive-sdlc`. Reconstruye todo leyendo archivos del workspace (que se comparte). Por eso la invocación **debe pasarle explícitamente** la clave de la HU y las rutas; si no, no sabría qué archivos abrir.
+
+**3.1** Determinar el sub-agente desde `tasks.json`:
 ```bash
 AGENT=$(python3 -c "import json; print(json.load(open('$TASKS_FILE'))['implementationAgent'])")
-# El valor es el nombre del sub-agente a invocar: spring-engineer | quarkus-engineer | spring-to-quarkus
-# Estos sub-agentes están declarados en el frontmatter `agents:` y NO son seleccionables en el picker.
+# spring-engineer | quarkus-engineer | spring-to-quarkus
+# Declarados en el frontmatter `agents:`; NO seleccionables en el picker.
 ```
 
-Ejecutar tareas **en orden de `dependsOn`**. Por cada tarea:
+**3.2** Invocar al sub-agente `$AGENT` por nombre (vía el tool `agent`) con este **contrato de invocación** explícito en el prompt:
+```
+Implementa la HU <HU_KEY>.
+Lee de disco (ya están escritos y aprobados):
+  • Spec:     .github/specs/<HU_KEY>.md
+  • Tareas:   .github/plans/<HU_KEY>/tasks.json
+  • Metadata: .github/specs/.metadata/<HU_KEY>.json   (framework, projectStructure, basePackage, paths hexagonales)
+Ejecuta TODAS las tareas de tasks.json en orden de `dependsOn`.
+Actualiza el estado de cada tarea en tasks.json según tu protocolo.
+Al terminar, devuelve un resumen: tareas completadas + archivos creados/modificados.
+```
+
+**3.3** El sub-agente lee esos archivos, implementa y **gestiona él mismo** el estado de cada tarea en `tasks.json` (ver el "Protocolo de tarea" del propio sub-agente). Formato por tarea:
 ```python
-import json
-from datetime import datetime
-
-# Al iniciar
-data = json.load(open(TASKS_FILE))
-for t in data['tasks']:
-    if t['id'] == 'TASK-X.X':
-        t['status'] = 'in_progress'
-        t['startedAt'] = datetime.now().isoformat()
-with open(TASKS_FILE, 'w') as f: json.dump(data, f, indent=2)
-
-# Al completar
-for t in data['tasks']:
-    if t['id'] == 'TASK-X.X':
-        t['status'] = 'completed'
-        t['completedAt'] = datetime.now().isoformat()
-with open(TASKS_FILE, 'w') as f: json.dump(data, f, indent=2)
+# Al iniciar:   t['status']='in_progress'; t['startedAt']=now
+# Al completar: t['status']='completed';   t['completedAt']=now
 ```
 
-Actualizar metadata a `"implementation_in_progress"` al iniciar la primera tarea.
+**3.4** Antes de invocar, `stive-sdlc` pone metadata en `"implementation_in_progress"`. Al **regresar** el sub-agente, `stive-sdlc` verifica en `tasks.json` que **todas** las tareas queden `completed`; si alguna quedó pendiente → reanudar invocando de nuevo al sub-agente con las tareas restantes.
 
 Cuando todas las tareas estén completadas:
 1. `status: "implementation_completed"`
-2. Compilar y ejecutar tests (OBLIGATORIO antes del Checkpoint 3):
-   ```bash
-   mvn clean compile
-   mvn test
-   ```
-   Si hay errores → corregir antes de continuar.
+2. Compilar y ejecutar tests (OBLIGATORIO antes del Checkpoint 3) — aplica el skill `test-runner`
+   (detecta el gestor de build —Maven o Gradle— y ejecuta los tests por capa).
+   Si hay errores de compilación o tests → corregir antes de continuar.
 3. Ejecutar validaciones:
    ```
    Lee: `domain-purity-checker`
@@ -297,8 +293,8 @@ Checkpoint 3:
 ║  CHECKPOINT 3: REVISIÓN DE IMPLEMENTACIÓN             ║
 ║  Rama: feature/hu-xxx                                 ║
 ║  Build y Tests:                                       ║
-║  ✓/✗ mvn clean compile → OK / ERRORES                ║
-║  ✓/✗ mvn test → X/X pasando (0 fallidos)             ║
+║  ✓/✗ Compilación → OK / ERRORES                      ║
+║  ✓/✗ Tests → X/X pasando (0 fallidos)                ║
 ║  Validaciones:                                        ║
 ║  ✓/✗ Domain puro (sin Spring/JPA/Jackson)            ║
 ║  ✓/✗ Cobertura ≥ 95%                                 ║

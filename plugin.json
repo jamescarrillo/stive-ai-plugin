@@ -12,6 +12,12 @@
     "agents/quarkus-engineer",
     "agents/spring-to-quarkus"
   ],
-  "skills": "skills/",
+  "skills": [
+    "skills",
+    "skills/security",
+    "skills/testing",
+    "skills/spring-boot",
+    "skills/quarkus"
+  ],
   "mcpServers": ".mcp.json"
 }

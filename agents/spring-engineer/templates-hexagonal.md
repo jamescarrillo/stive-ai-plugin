@@ -10,44 +10,7 @@ user-invocable: false
 
 ## Flujo de implementación (ejecutar en orden)
 
-Lee `tasks.json`. Para cada tarea en orden de `dependsOn`, sigue este protocolo:
-
-### Protocolo por tarea
-
-**Antes de implementar la tarea:**
-```python
-import json, datetime
-# HU_KEY = clave real de la HU (ej: "SCRUM-5" o "HU-123"), conocida del contexto de PASO 0
-tasks_file = f'.github/plans/{HU_KEY}/tasks.json'
-data = json.load(open(tasks_file))
-for t in data['tasks']:
-    if t['id'] == 'TASK-X.X':
-        t['status'] = 'in_progress'
-        t['startedAt'] = datetime.datetime.now().isoformat()
-        break
-with open(tasks_file, 'w') as f:
-    json.dump(data, f, indent=2, ensure_ascii=False)
-```
-
-**Implementar el código** siguiendo los templates de este agente.
-
-**Después de completar la tarea:**
-```python
-import json, datetime
-data = json.load(open(tasks_file))
-for t in data['tasks']:
-    if t['id'] == 'TASK-X.X':
-        t['status'] = 'completed'
-        t['completedAt'] = datetime.datetime.now().isoformat()
-        break
-meta_file = f'.github/specs/.metadata/{HU_KEY}.json'
-meta = json.load(open(meta_file))
-meta['status'] = 'implementation_in_progress'
-with open(tasks_file, 'w') as f:
-    json.dump(data, f, indent=2, ensure_ascii=False)
-with open(meta_file, 'w') as f:
-    json.dump(meta, f, indent=2, ensure_ascii=False)
-```
+Ejecuta las tareas del `tasks.json` en orden de `dependsOn`. Para actualizar el estado de cada tarea (antes/después), aplica el **`## Protocolo de tarea`** definido en el entry `agents/spring-engineer/spring-engineer.agent.md` — es transversal a todos los modos. Implementa el código de cada tarea con los templates de abajo.
 
 Reportar al usuario después de cada tarea:
 ```

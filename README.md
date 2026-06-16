@@ -12,8 +12,8 @@ Pasa este repositorio al instalador de Agent Plugins de VS Code. El plugin queda
 
 | Agente | Archivo | Propósito |
 |---|---|---|
-| `stive-sdlc` | `agents/stive-sdlc.agent.md` | Orquesta el flujo `JIRA → Spec → Plan → Código → PR` con 4 checkpoints humanos |
-| `stive-auditor` | `agents/stive-auditor.agent.md` | Identifica deuda técnica y oportunidades de mejora; entrega un backlog priorizado (solo reporta) |
+| `stive-sdlc` | `agents/stive-sdlc/stive-sdlc.agent.md` | Orquesta el flujo `JIRA → Spec → Plan → Código → PR` con 4 checkpoints humanos |
+| `stive-auditor` | `agents/stive-auditor/stive-auditor.agent.md` | Identifica deuda técnica y oportunidades de mejora; entrega un backlog priorizado (solo reporta) |
 
 ## Sub-agentes de implementación (Etapa 3, invocados por stive-sdlc)
 
@@ -53,7 +53,12 @@ agents/
   spring-to-quarkus/             ← Sub-agente de migración (oculto)
     spring-to-quarkus.agent.md     (user-invocable: false)
     restructure-guide.md · dependency-mapping.md · migration-rules.md · checklist.md
-skills/                          ← Skills invocables por nombre (spec-generator, plan-generator, pr-creator, ...)
+skills/                          ← Skills invocables por nombre (raíz + categorías declaradas en plugin.json)
+  spec-generator/ · plan-generator/ · pr-creator/ · tech-auditor/
+  security/    → code-reviewer · domain-purity-checker · mock-strategist
+  testing/     → coverage-enforcer · local-deployment-verifier · test-generator · test-runner
+  spring-boot/ → spring-use-case-implementer · spring-webclient-configurator
+  quarkus/     → quarkus-migrator-from-spring
 docs/                            ← Lineamientos compartidos (arquitectura, estándares, BIAN) que consumen los agentes
 templates/                       ← Plantillas (HU, etc.)
 scripts/                         ← jira_mcp_server.py (MCP JIRA local, opcional para pruebas en CLI)
@@ -66,7 +71,45 @@ Cada agente vive en **su propia carpeta** `agents/<nombre>/`, declarada explíci
 - **Entry** `agents/<nombre>/<nombre>.agent.md` — el "cerebro": reglas, decisiones y cuándo actúa.
 - **Archivos de soporte** en la misma carpeta — templates, guías y scripts que el entry referencia por ruta relativa al plugin.
 
-> ⚠️ **Regla de oro del picker:** al declarar una carpeta en `agents`, VS Code registra como agente **cada `.md` que contenga**. Por eso **todo archivo de soporte lleva `user-invocable: false`** en su frontmatter, y solo los entries de `stive-sdlc` y `stive-auditor` quedan visibles. Al añadir un nuevo agente: crea su carpeta, añádela al array de `plugin.json`, y pon `user-invocable: false` a todo lo que no deba aparecer en el picker.
+> ⚠️ **Regla de oro del picker:** al declarar una carpeta en `agents`, VS Code registra como agente **cada `.md` que contenga**. Por eso **todo archivo de soporte lleva `user-invocable: false`** en su frontmatter, y solo los entries de `stive-sdlc` y `stive-auditor` quedan visibles.
+
+### Reglas de descubrimiento (importantes, no obvias)
+
+El descubrimiento de VS Code **NO es recursivo**: solo mira un nivel dentro de cada carpeta declarada en `plugin.json`. Por eso:
+
+- **Agentes** — cada agente debe estar declarado: `agents/<nombre>/<nombre>.agent.md`, con la carpeta listada en el array `agents`.
+- **Skills** — cada skill debe estar **exactamente un nivel** bajo una raíz declarada: `<raíz>/<skill>/SKILL.md`, y el `name` del frontmatter **debe** coincidir con el nombre de su carpeta (si no, el skill no se carga). Las categorías (`security/`, `testing/`, ...) se habilitan declarándolas como raíces en el array `skills`.
+
+### Cómo extender (checklist)
+
+**Añadir un agente:**
+1. `agents/<nombre>/<nombre>.agent.md` con frontmatter (`name`, `description`, `tools`).
+2. Añade `"agents/<nombre>"` al array `agents` de `plugin.json`.
+3. `user-invocable: false` en el entry si NO debe salir en el picker, y en **todos** sus archivos de soporte.
+4. Si es un sub-agente que invoca el orquestador, añade su `name` al frontmatter `agents:` de `stive-sdlc`.
+
+**Añadir un skill:**
+1. `skills/<categoría>/<skill>/SKILL.md` con `name: <skill>` (igual al nombre de la carpeta).
+2. Si la categoría es nueva, añade `"skills/<categoría>"` al array `skills` de `plugin.json`.
+3. Referéncialo por **nombre** desde el agente que lo use.
+
+**Añadir un framework / sub-agente de implementación nuevo** (ej. `node-engineer`) — toca varios puntos porque el orquestador y el planificador necesitan conocer la opción:
+1. Crea el sub-agente: `agents/<framework>-engineer/<framework>-engineer.agent.md` con `user-invocable: false` (+ su carpeta de soporte, todo blindado).
+2. Decláralo en el array `agents` de `plugin.json`.
+3. Añade su `name` al frontmatter `agents:` de `stive-sdlc`.
+4. Enseña a detectarlo: añade la regla de detección en `agents/stive-sdlc/detection.md` (cómo se reconoce el framework).
+5. Enseña a seleccionarlo: añade el caso en `skills/plan-generator/SKILL.md` (qué `implementationAgent` asignar).
+6. Verifica con el validador (abajo).
+
+### Validación
+
+Antes de commitear cambios, corre el validador — comprueba que todo agente esté declarado, los soportes blindados, los skills cubiertos por una raíz, las referencias resuelvan y no haya nombres rotos:
+
+```bash
+python3 scripts/validate.py
+```
+
+Sale con código `!= 0` si hay errores. Ideal como pre-commit hook.
 
 ## Flujo de integración
 

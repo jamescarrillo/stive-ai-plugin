@@ -1,3 +1,9 @@
+---
+name: spring-to-quarkus-checklist
+description: Material de soporte de spring-to-quarkus (no es un agente seleccionable).
+user-invocable: false
+---
+
 # Checklist: Spring to Quarkus Migration
 
 - [ ] Revisar la arquitectura hexagonal y los boundaries de dominio.

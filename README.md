@@ -36,37 +36,37 @@ HU de migración       → spring-to-quarkus
 ## Estructura del repositorio
 
 ```
-plugin.json                      ← Manifiesto del Agent Plugin (declara agents/, skills/ y .mcp.json)
+plugin.json                      ← Manifiesto: declara cada carpeta de agente, skills/ y .mcp.json
 .mcp.json                        ← Config MCP: atlassian (JIRA remoto) + github (npx)
 agents/
-  stive-sdlc.agent.md            ← Orquestador SDLC (picker)
-  stive-sdlc/                    ← Soporte del orquestador
-    preflight.md · detection.md · reference.md
-  stive-auditor.agent.md         ← Auditor / backlog (picker)
-  spring-engineer.agent.md       ← Sub-agente Spring Boot (user-invocable: false)
-  spring-engineer/               ← Soporte del sub-agente
-    templates-hexagonal.md
-    templates-traditional.md
-  quarkus-engineer.agent.md      ← Sub-agente Quarkus (user-invocable: false)
-  quarkus-engineer/              ← Soporte del sub-agente
-    templates-hexagonal.md
-    templates-traditional.md
-  spring-to-quarkus.agent.md     ← Sub-agente de migración (user-invocable: false)
-  spring-to-quarkus/             ← Soporte del sub-agente (guías de migración)
-    restructure-guide.md
-    dependency-mapping.md · migration-rules.md · checklist.md
+  stive-sdlc/                    ← Orquestador SDLC (PICKER)
+    stive-sdlc.agent.md            entry visible
+    preflight.md · detection.md · reference.md   (user-invocable: false)
+  stive-auditor/                 ← Auditor / backlog (PICKER)
+    stive-auditor.agent.md         entry visible
+  spring-engineer/               ← Sub-agente Spring Boot (oculto)
+    spring-engineer.agent.md       (user-invocable: false)
+    templates-hexagonal.md · templates-traditional.md   (user-invocable: false)
+  quarkus-engineer/              ← Sub-agente Quarkus (oculto)
+    quarkus-engineer.agent.md      (user-invocable: false)
+    templates-hexagonal.md · templates-traditional.md   (user-invocable: false)
+  spring-to-quarkus/             ← Sub-agente de migración (oculto)
+    spring-to-quarkus.agent.md     (user-invocable: false)
+    restructure-guide.md · dependency-mapping.md · migration-rules.md · checklist.md
 skills/                          ← Skills invocables por nombre (spec-generator, plan-generator, pr-creator, ...)
-docs/                            ← Contexto de arquitectura / estándares que consumen los agentes
+docs/                            ← Lineamientos compartidos (arquitectura, estándares, BIAN) que consumen los agentes
 templates/                       ← Plantillas (HU, etc.)
 scripts/                         ← jira_mcp_server.py (MCP JIRA local, opcional para pruebas en CLI)
 ```
 
-### Convención de los sub-agentes (escalable)
+### Convención de agentes (escalable)
 
-Cada sub-agente se compone de:
+Cada agente vive en **su propia carpeta** `agents/<nombre>/`, declarada explícitamente en el array `agents` de `plugin.json`:
 
-- **Entry plano** `agents/<nombre>.agent.md` — el "cerebro": reglas, decisiones y cuándo actúa. Va plano en `agents/` porque es lo que el plugin registra (y queda oculto del picker con `user-invocable: false`).
-- **Carpeta de soporte** `agents/<nombre>/` — templates y guías que el entry referencia por ruta relativa al plugin. Para escalar (un template nuevo, una regla nueva) agregas un archivo aquí **sin tocar el cerebro del agente**.
+- **Entry** `agents/<nombre>/<nombre>.agent.md` — el "cerebro": reglas, decisiones y cuándo actúa.
+- **Archivos de soporte** en la misma carpeta — templates, guías y scripts que el entry referencia por ruta relativa al plugin.
+
+> ⚠️ **Regla de oro del picker:** al declarar una carpeta en `agents`, VS Code registra como agente **cada `.md` que contenga**. Por eso **todo archivo de soporte lleva `user-invocable: false`** en su frontmatter, y solo los entries de `stive-sdlc` y `stive-auditor` quedan visibles. Al añadir un nuevo agente: crea su carpeta, añádela al array de `plugin.json`, y pon `user-invocable: false` a todo lo que no deba aparecer en el picker.
 
 ## Flujo de integración
 

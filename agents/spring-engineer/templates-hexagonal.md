@@ -1,6 +1,12 @@
+---
+name: spring-engineer-templates-hexagonal
+description: Material de soporte de spring-engineer (no es un agente seleccionable).
+user-invocable: false
+---
+
 # Spring Engineer — Templates: Modo Hexagonal
 
-> Referenciado por `agents/spring-engineer.agent.md`. Aplica en `projectStructure` = `new` o `hexagonal`: flujo completo TASK-1.x … TASK-7.x (domain → application → infraestructura → tests).
+> Referenciado por `agents/spring-engineer/spring-engineer.agent.md`. Aplica en `projectStructure` = `new` o `hexagonal`: flujo completo TASK-1.x … TASK-7.x (domain → application → infraestructura → tests).
 
 ## Flujo de implementación (ejecutar en orden)
 

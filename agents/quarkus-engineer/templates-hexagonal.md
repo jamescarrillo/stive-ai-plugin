@@ -1,6 +1,12 @@
+---
+name: quarkus-engineer-templates-hexagonal
+description: Material de soporte de quarkus-engineer (no es un agente seleccionable).
+user-invocable: false
+---
+
 # Quarkus Engineer — Templates: Modo Hexagonal
 
-> Referenciado por `agents/quarkus-engineer.agent.md`. Aplica en `projectStructure` = `new` o `hexagonal` (CDI, JAX-RS, Panache, REST Assured).
+> Referenciado por `agents/quarkus-engineer/quarkus-engineer.agent.md`. Aplica en `projectStructure` = `new` o `hexagonal` (CDI, JAX-RS, Panache, REST Assured).
 
 ## Templates: Modo Hexagonal
 

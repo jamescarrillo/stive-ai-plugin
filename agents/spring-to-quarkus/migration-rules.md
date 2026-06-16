@@ -1,3 +1,9 @@
+---
+name: spring-to-quarkus-migration-rules
+description: Material de soporte de spring-to-quarkus (no es un agente seleccionable).
+user-invocable: false
+---
+
 # Migración Spring Boot → Quarkus
 
 ## Reglas clave

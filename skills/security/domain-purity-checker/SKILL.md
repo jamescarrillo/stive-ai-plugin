@@ -147,7 +147,7 @@ else
   echo "  - Mover JPA a infrastructure/, no en application/"
   echo "  - Outbound ports deben ser interfaces puras, sin extends JpaRepository"
   echo ""
-  echo "Referencia: .github/docs/common-errors.md"
+  echo "Referencia: docs/common-errors.md"
 fi
 ```
 

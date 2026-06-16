@@ -150,7 +150,7 @@ EOF
 )
   if [ -n "$COVERAGE" ] && [ "$COVERAGE" -lt "$COVERAGE_MIN" ]; then
     echo "FAIL: Cobertura de instrucciones $COVERAGE% < ${COVERAGE_MIN}%"
-    echo "Ejecutar: .github/skills/testing/test-generator/SKILL.md para gaps"
+    echo "Ejecutar: `test-generator` para gaps"
     exit 1
   fi
   echo "PASS: Cobertura de instrucciones ${COVERAGE:-desconocida}% ≥ ${COVERAGE_MIN}%"

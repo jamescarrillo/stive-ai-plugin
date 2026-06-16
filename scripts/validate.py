@@ -112,6 +112,26 @@ for root in agent_roots:
                 f"picker): {f.relative_to(ROOT)}")
 
 # ---------------------------------------------------------------------------
+# 2b. Nombres de tools válidos (los no reconocidos se ignoran en silencio)
+# ---------------------------------------------------------------------------
+VALID_TOOLS = {
+    "execute", "read", "edit", "search", "agent", "web", "todo",
+    "shell", "bash", "powershell", "notebookread", "multiedit", "write",
+    "notebookedit", "grep", "glob", "custom-agent", "task",
+    "websearch", "webfetch", "todowrite",
+}
+for f in agent_files:
+    raw = frontmatter(f).get("tools")
+    if not raw:
+        continue
+    for t in re.findall(r"[A-Za-z0-9_./-]+", raw):
+        if t == "*" or "/" in t:  # comodín o tool de MCP (server/tool)
+            continue
+        if t not in VALID_TOOLS:
+            warn(f"{f.relative_to(ROOT)}: tool '{t}' no es un alias válido "
+                 f"(se ignoraría en silencio)")
+
+# ---------------------------------------------------------------------------
 # 3. Skills: un nivel bajo una raíz declarada; name == carpeta
 # ---------------------------------------------------------------------------
 skill_names: set[str] = set()

@@ -30,7 +30,7 @@ Si el proyecto es un proyecto multi-módulo de Maven/Gradle o un proyecto de un 
   * Drivers de bases de datos y ORMs (PostgreSQL, MySQL, Hibernate).
   * MapStruct u otras librerías de mapeo de objetos.
   * `jakarta.validation-api` e `hibernate-validator` (para validación en controladores).
-  * Clientes HTTP externos (WebClient — prohibido RestTemplate y Feign para nuevo código).
+  * Clientes HTTP externos: en **Spring Boot 3.x** usa `WebClient`; en **4.x** prefiere `RestClient` (sync) o interfaces `@HttpExchange`. Prohibido `RestTemplate` y Feign para código nuevo.
 
 ## 4. Estilo de Pruebas (Testing Rules)
 

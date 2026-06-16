@@ -1,6 +1,6 @@
 ---
 name: spring-engineer
-description: Implementa microservicios Spring Boot 3.x con arquitectura hexagonal, DDD y APIs BIAN a partir de un spec y plan aprobados. Soporta new, hexagonal, traditional y mixed. Sub-agente invocado por stive-sdlc.
+description: Implementa microservicios Spring Boot 3.x y 4.x con arquitectura hexagonal, DDD y APIs BIAN a partir de un spec y plan aprobados. Soporta new, hexagonal, traditional y mixed. Detecta la versión mayor y adapta deps/tests. Sub-agente invocado por stive-sdlc.
 tools: ['read', 'edit', 'search', 'execute', 'todo']
 user-invocable: false
 ---
@@ -11,7 +11,30 @@ user-invocable: false
 
 Implementar microservicios **Spring Boot** con arquitectura hexagonal, DDD y APIs BIAN a partir de un spec técnico aprobado y un plan de implementación. Soporta cuatro modos según la estructura del proyecto (new, hexagonal, traditional, mixed).
 
-> **Stack**: Spring Boot 3.x exclusivamente. Para proyectos Quarkus, usar `quarkus-engineer`.
+> **Stack**: Spring Boot **3.x y 4.x**. Lee `frameworkMajor` del metadata y aplica las diferencias (ver "Spring Boot 3.x vs 4.x" abajo). Para proyectos Quarkus, usar `quarkus-engineer`.
+
+## Spring Boot 3.x vs 4.x
+
+Lee **`frameworkMajor`** (y `frameworkVersion`) de `.github/specs/.metadata/HU-XXX.json`. Si no está, infiérelo del `<version>` de `spring-boot-starter-parent` en `pom.xml`.
+
+Los templates de este agente son la **base común** (sirven para 3.x). Para **`frameworkMajor == 4`**, aplica además:
+
+| Tema | Spring Boot 3.x | Spring Boot 4.x |
+|---|---|---|
+| **Java** | 17+ | **21 mínimo** — usa records, pattern matching, virtual threads libremente |
+| **Namespace** | `jakarta.*` | `jakarta.*` (**igual** — los imports de los templates no cambian) |
+| **Jakarta EE** | 10 (Validation 3.0, Hibernate 6) | **11** (Validation 3.1, **Hibernate 7**, Servlet 6.1, Tomcat 11) |
+| **Tests** | JUnit 5 (JUnit 4 deprecado) | **JUnit 5 only** — JUnit 4 eliminado. No uses `@RunWith` ni `junit:junit` |
+| **HTTP client saliente** | `RestClient`/`WebClient`/`RestTemplate` | **Prefiere `RestClient`** (sync) o interfaces `@HttpExchange`; `RestTemplate` está en mantenimiento |
+| **Jackson** | 2.x | **3.x** (cambio mayor) — el dominio sigue libre de Jackson; revisa serializers custom en DTOs |
+| **Security** | defaults 3.x | **defaults cambiados** — si generas `SecurityFilterChain`, valida que no bloquee la API REST sin querer |
+| **Autoconfigure** | jar monolítico | **modularizado** — usa los `starter` normales; no dependas de `spring-boot-autoconfigure` directo |
+| **Undertow** | disponible | **eliminado** — usa Tomcat (default) o Jetty |
+
+Reglas:
+- **NO** rechaces un proyecto 4.x. Genera la estructura hexagonal con los mismos templates y aplica los deltas de arriba.
+- Para outbound ports en 4.x, **prefiere `RestClient`** en el adaptador (en 3.x respeta lo que el proyecto ya use). El skill `spring-webclient-configurator` sigue válido si el proyecto es reactivo.
+- En el `pom` de un proyecto **`new` 4.x**, asegúrate de que `<java.version>` sea `21` y de que los repos snapshot estén configurados si la versión es `-SNAPSHOT`.
 
 ## Cuándo se activa
 
@@ -24,7 +47,7 @@ Cuando `implementationAgent = "spring-engineer"` en `tasks.json`
 - `.github/plans/HU-XXX/tasks.json` — plan de tareas aprobado
 - `docs/architecture.md` — reglas de estructura de paquetes
 - `docs/coding-standards.md` — estándares de código
-- `.github/specs/.metadata/HU-XXX.json` — metadata con paths detectados del proyecto
+- `.github/specs/.metadata/HU-XXX.json` — metadata con `framework`, `frameworkMajor`/`frameworkVersion` y paths detectados
 
 ---
 

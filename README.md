@@ -93,6 +93,24 @@ El descubrimiento de VS Code **NO es recursivo**: solo mira un nivel dentro de c
 2. Si la categoría es nueva, añade `"skills/<categoría>"` al array `skills` de `plugin.json`.
 3. Referéncialo por **nombre** desde el agente que lo use.
 
+**Añadir un framework / sub-agente de implementación nuevo** (ej. `node-engineer`) — toca varios puntos porque el orquestador y el planificador necesitan conocer la opción:
+1. Crea el sub-agente: `agents/<framework>-engineer/<framework>-engineer.agent.md` con `user-invocable: false` (+ su carpeta de soporte, todo blindado).
+2. Decláralo en el array `agents` de `plugin.json`.
+3. Añade su `name` al frontmatter `agents:` de `stive-sdlc`.
+4. Enseña a detectarlo: añade la regla de detección en `agents/stive-sdlc/detection.md` (cómo se reconoce el framework).
+5. Enseña a seleccionarlo: añade el caso en `skills/plan-generator/SKILL.md` (qué `implementationAgent` asignar).
+6. Verifica con el validador (abajo).
+
+### Validación
+
+Antes de commitear cambios, corre el validador — comprueba que todo agente esté declarado, los soportes blindados, los skills cubiertos por una raíz, las referencias resuelvan y no haya nombres rotos:
+
+```bash
+python3 scripts/validate.py
+```
+
+Sale con código `!= 0` si hay errores. Ideal como pre-commit hook.
+
 ## Flujo de integración
 
 ```

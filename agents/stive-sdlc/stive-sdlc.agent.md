@@ -179,7 +179,7 @@ Sigue el procedimiento de **`agents/stive-sdlc/detection.md`**: detecta `framewo
 ```
 getJiraIssueDetails(issueIdOrKey: "HU-XXX")
 → Parsear título, descripción (ADF), criterios de aceptación
-→ Escribir .github/specs/HU-XXX.md
+→ Escribir .github/specs/HU-XXX.md usando la estructura base de `templates/HU-TEMPLATE.md`
 → Actualizar .github/specs/.metadata/HU-XXX.json (cargar el existente de PASO 2 y añadir):
     status: "spec_generated"
     atlassian_base_url: host extraído del campo `self`/url del issue devuelto por el MCP
@@ -279,12 +279,9 @@ Actualizar metadata a `"implementation_in_progress"` al iniciar la primera tarea
 
 Cuando todas las tareas estén completadas:
 1. `status: "implementation_completed"`
-2. Compilar y ejecutar tests (OBLIGATORIO antes del Checkpoint 3):
-   ```bash
-   mvn clean compile
-   mvn test
-   ```
-   Si hay errores → corregir antes de continuar.
+2. Compilar y ejecutar tests (OBLIGATORIO antes del Checkpoint 3) — aplica el skill `test-runner`
+   (detecta el gestor de build —Maven o Gradle— y ejecuta los tests por capa).
+   Si hay errores de compilación o tests → corregir antes de continuar.
 3. Ejecutar validaciones:
    ```
    Lee: `domain-purity-checker`
@@ -297,8 +294,8 @@ Checkpoint 3:
 ║  CHECKPOINT 3: REVISIÓN DE IMPLEMENTACIÓN             ║
 ║  Rama: feature/hu-xxx                                 ║
 ║  Build y Tests:                                       ║
-║  ✓/✗ mvn clean compile → OK / ERRORES                ║
-║  ✓/✗ mvn test → X/X pasando (0 fallidos)             ║
+║  ✓/✗ Compilación → OK / ERRORES                      ║
+║  ✓/✗ Tests → X/X pasando (0 fallidos)                ║
 ║  Validaciones:                                        ║
 ║  ✓/✗ Domain puro (sin Spring/JPA/Jackson)            ║
 ║  ✓/✗ Cobertura ≥ 95%                                 ║

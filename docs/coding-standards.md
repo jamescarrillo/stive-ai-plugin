@@ -4,7 +4,7 @@ Este documento define los estándares de código para los agentes en `.github`.
 
 ## Java
 
-- Usa Java 17+.
+- Usa Java 17+ (Spring Boot 4.x requiere **Java 21+**; usa la versión que detecte `frameworkMajor`).
 - En el dominio, evita anotaciones de framework y dependencias de librerías externas.
 - Prefiere inmutabilidad y builders en modelos de dominio.
 - Usa nombres de clases y paquetes descriptivos y alineados con BIAN.

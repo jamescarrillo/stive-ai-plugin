@@ -22,6 +22,18 @@ else
   FRAMEWORK="unknown"
 fi
 
+# Versión del framework (distingue Spring Boot 3.x vs 4.x)
+FRAMEWORK_VERSION=""
+if [ "$FRAMEWORK" = "spring-boot" ]; then
+  # 1) versión del parent  2) property <spring-boot.version>
+  FRAMEWORK_VERSION=$(grep -A2 'spring-boot-starter-parent' pom.xml 2>/dev/null | grep -oE '<version>[0-9]+\.[0-9]+\.[0-9]+[^<]*' | head -1 | sed 's|<version>||')
+  [ -z "$FRAMEWORK_VERSION" ] && FRAMEWORK_VERSION=$(grep -oE '<spring-boot\.version>[0-9]+\.[0-9]+\.[0-9]+[^<]*' pom.xml 2>/dev/null | head -1 | sed 's|<spring-boot\.version>||')
+elif [ "$FRAMEWORK" = "quarkus" ]; then
+  FRAMEWORK_VERSION=$(grep -oE '<quarkus\.platform\.version>[0-9][^<]*' pom.xml 2>/dev/null | head -1 | sed 's|<quarkus\.platform\.version>||')
+fi
+FRAMEWORK_MAJOR=$(echo "$FRAMEWORK_VERSION" | cut -d. -f1)   # ej "3" o "4"
+# Para Spring Boot: major 4 ⇒ Java 21, Jakarta EE 11, JUnit 5 only, RestClient. Ver spring-engineer.
+
 # Estructura
 JAVA_FILES=$(find src/main/java -name "*.java" 2>/dev/null | wc -l | tr -d ' ')
 HAS_HEX_DOMAIN=$(find src/main/java -type d \( -name "domain" -o -name "core" \) 2>/dev/null | head -1)
@@ -62,6 +74,8 @@ meta = {
     "timestamp": datetime.datetime.now().isoformat(),
     "status": "new",
     "framework": FRAMEWORK,
+    "frameworkVersion": FRAMEWORK_VERSION,   # ej "3.4.1" o "4.1.1-SNAPSHOT"
+    "frameworkMajor": FRAMEWORK_MAJOR,        # ej "3" o "4" — lo usa spring-engineer
     "projectStructure": PROJECT_STRUCTURE,
     "detectedBasePackage": BASE_PACKAGE,
     "hexDomainDir": HEX_DOMAIN_DIR or "domain",
@@ -75,7 +89,7 @@ Mostrar al usuario:
 ```
 ╔══════════════════════════════════════════════════════════════╗
 ║  DETECCIÓN DE PROYECTO                                        ║
-║  Framework:    [spring-boot | quarkus | unknown]             ║
+║  Framework:    [spring-boot | quarkus | unknown] [versión]   ║
 ║  Estructura:   [new | hexagonal | traditional | mixed]        ║
 ║  Base Package: [valor detectado]                             ║
 ╚══════════════════════════════════════════════════════════════╝

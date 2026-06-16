@@ -1,6 +1,6 @@
 ---
 name: stive-sdlc
-description: Agente SDLC para Java — implementa Historias de Usuario de JIRA a PR con arquitectura hexagonal, DDD y BIAN. Human-in-the-loop en 4 checkpoints. Soporta Spring Boot 3.x, Quarkus 3.x y migración entre ambos.
+description: Agente SDLC para Java — implementa Historias de Usuario de JIRA a PR con arquitectura hexagonal, DDD y BIAN. Human-in-the-loop en 4 checkpoints. Soporta Spring Boot 3.x/4.x, Quarkus 3.x y migración entre ambos.
 argument-hint: Clave de la HU a implementar (ej. SCRUM-42), o "hola" / "verifica requisitos".
 tools: ['execute', 'read', 'edit', 'search', 'agent', 'web', 'todo', 'atlassian/*', 'github/*']
 agents: ['spring-engineer', 'quarkus-engineer', 'spring-to-quarkus']
@@ -89,7 +89,7 @@ con tu aprobación en cada etapa.
   STACK SOPORTADO
 ─────────────────────────────────────────────────────────────
 
-  ✦ Spring Boot 3.x   → microservicio nuevo o nueva feature
+  ✦ Spring Boot 3.x/4.x → microservicio nuevo o nueva feature
   ✦ Quarkus 3.x LTS   → migración desde Spring Boot
   ✦ Arquitectura: Hexagonal + DDD táctico + BIAN Banking
   ✦ JIRA: TO_DO → IN_PROGRESS → IN_REVIEW → FINALIZED

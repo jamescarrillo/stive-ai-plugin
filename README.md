@@ -1,6 +1,6 @@
 # Stive AI — Agent Plugin para VS Code
 
-Plugin de **agentes de IA para el SDLC de microservicios Java** (Spring Boot 3.x / Quarkus 3.x LTS), con arquitectura hexagonal, DDD táctico y APIs BIAN. Se instala como **Agent Plugin de VS Code** (preview) apuntando al código fuente de este repositorio.
+Plugin de **agentes de IA para el SDLC de microservicios Java** (Spring Boot 3.x/4.x / Quarkus 3.x LTS), con arquitectura hexagonal, DDD táctico y APIs BIAN. Se instala como **Agent Plugin de VS Code** (preview) apuntando al código fuente de este repositorio.
 
 > El manifiesto `plugin.json` declara, en arrays, la **carpeta de cada agente** y las **raíces de skills**. VS Code registra como agente **cada `.md`** dentro de una carpeta de agente declarada; por eso los entries que deben quedar fuera del picker llevan `user-invocable: false`. Seleccionables en el picker de Copilot: solo `stive-sdlc` y `stive-auditor`. Ver **Reglas de descubrimiento** más abajo.
 
@@ -41,7 +41,7 @@ Pídele a `stive-sdlc`: **`"verifica requisitos"`** → corre el pre-flight (`ag
 
 | Agente | Framework | Estructuras soportadas |
 |---|---|---|
-| `spring-engineer` | Spring Boot 3.x | new, hexagonal, traditional, mixed |
+| `spring-engineer` | Spring Boot 3.x / 4.x | new, hexagonal, traditional, mixed |
 | `quarkus-engineer` | Quarkus 3.x LTS | new, hexagonal, traditional, mixed |
 | `spring-to-quarkus` | Spring → Quarkus | hexagonal→hexagonal, traditional→traditional (A), traditional→hexagonal (B) |
 

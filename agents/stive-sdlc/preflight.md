@@ -1,3 +1,9 @@
+---
+name: stive-sdlc-preflight
+description: Material de soporte de stive-sdlc (no es un agente seleccionable).
+user-invocable: false
+---
+
 # Stive SDLC — PASO 0: Pre-flight (validación de entorno)
 
 > Referenciado por `agents/stive-sdlc.agent.md`. Ejecutar al recibir `implementa`, `continúa` o `verifica requisitos`. Si hay errores → detener, no continuar a PASO 1.

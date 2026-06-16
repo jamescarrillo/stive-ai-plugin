@@ -1,3 +1,9 @@
+---
+name: stive-sdlc-detection
+description: Material de soporte de stive-sdlc (no es un agente seleccionable).
+user-invocable: false
+---
+
 # Stive SDLC — PASO 2: Detección de framework y estructura
 
 > Referenciado por `agents/stive-sdlc.agent.md`. Ejecutar solo cuando `STATUS == "new"`. Detecta framework + projectStructure, resuelve base package y paths hexagonales, y guarda todo en el metadata.

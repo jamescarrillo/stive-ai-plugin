@@ -1,3 +1,9 @@
+---
+name: stive-sdlc-reference
+description: Material de soporte de stive-sdlc (no es un agente seleccionable).
+user-invocable: false
+---
+
 # Stive SDLC — Catálogo de herramientas, skills y sub-agentes
 
 > Referenciado por `agents/stive-sdlc.agent.md`. Directorio de los tools MCP y de los skills/sub-agentes que el orquestador invoca por nombre en cada etapa.

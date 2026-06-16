@@ -5,7 +5,7 @@
   "author": {
     "name": "James Carrillo"
   },
-  "agents": "agents/",
+  "agents": ["agents/", "agents/stive-sdlc"],
   "skills": "skills/",
   "mcpServers": ".mcp.json"
 }

@@ -113,6 +113,46 @@ Según el `projectStructure` (ver tabla arriba), aplica los templates correspond
 - **Tradicional / Adaptación** (`traditional`, `mixed`) → `agents/spring-engineer/templates-traditional.md`
   Service y Controller respetando naming, paquetes e inyección del proyecto existente.
 
+## Protocolo de tarea
+
+Aplica a **todos los modos** (hexagonal y tradicional). Ejecuta las tareas del `tasks.json` en orden de `dependsOn`. Por cada tarea, antes y después de implementar:
+
+```python
+import json, datetime
+# HU_KEY = clave real de la HU (ej: "SCRUM-5" o "HU-123"), recibida en el prompt de invocación de stive-sdlc
+tasks_file = f'.github/plans/{HU_KEY}/tasks.json'
+
+# Al INICIAR una tarea:
+data = json.load(open(tasks_file))
+for t in data['tasks']:
+    if t['id'] == 'TASK-X.X':
+        t['status'] = 'in_progress'
+        t['startedAt'] = datetime.datetime.now().isoformat()
+        break
+with open(tasks_file, 'w') as f:
+    json.dump(data, f, indent=2, ensure_ascii=False)
+
+# Al COMPLETAR una tarea:
+data = json.load(open(tasks_file))
+for t in data['tasks']:
+    if t['id'] == 'TASK-X.X':
+        t['status'] = 'completed'
+        t['completedAt'] = datetime.datetime.now().isoformat()
+        break
+with open(tasks_file, 'w') as f:
+    json.dump(data, f, indent=2, ensure_ascii=False)
+
+# Marcar el flujo en progreso en el metadata —
+# necesario para que la reanudación (PASO 1 de stive-sdlc) detecte el estado correcto.
+meta_file = f'.github/specs/.metadata/{HU_KEY}.json'
+meta = json.load(open(meta_file))
+meta['status'] = 'implementation_in_progress'
+with open(meta_file, 'w') as f:
+    json.dump(meta, f, indent=2, ensure_ascii=False)
+```
+
+Reporta al usuario un resumen breve después de cada tarea completada.
+
 ## Checklist de validación post-implementación
 
 ```

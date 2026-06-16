@@ -247,35 +247,34 @@ Checkpoint 2:
 
 ### Etapa 3: Plan → Código
 
-Leer el sub-agente desde tasks.json e **invocarlo por nombre** (vía el tool `agent`):
+> **El sub-agente corre en contexto AISLADO** — no hereda esta conversación ni las variables de `stive-sdlc`. Reconstruye todo leyendo archivos del workspace (que se comparte). Por eso la invocación **debe pasarle explícitamente** la clave de la HU y las rutas; si no, no sabría qué archivos abrir.
+
+**3.1** Determinar el sub-agente desde `tasks.json`:
 ```bash
 AGENT=$(python3 -c "import json; print(json.load(open('$TASKS_FILE'))['implementationAgent'])")
-# El valor es el nombre del sub-agente a invocar: spring-engineer | quarkus-engineer | spring-to-quarkus
-# Estos sub-agentes están declarados en el frontmatter `agents:` y NO son seleccionables en el picker.
+# spring-engineer | quarkus-engineer | spring-to-quarkus
+# Declarados en el frontmatter `agents:`; NO seleccionables en el picker.
 ```
 
-Ejecutar tareas **en orden de `dependsOn`**. Por cada tarea:
+**3.2** Invocar al sub-agente `$AGENT` por nombre (vía el tool `agent`) con este **contrato de invocación** explícito en el prompt:
+```
+Implementa la HU <HU_KEY>.
+Lee de disco (ya están escritos y aprobados):
+  • Spec:     .github/specs/<HU_KEY>.md
+  • Tareas:   .github/plans/<HU_KEY>/tasks.json
+  • Metadata: .github/specs/.metadata/<HU_KEY>.json   (framework, projectStructure, basePackage, paths hexagonales)
+Ejecuta TODAS las tareas de tasks.json en orden de `dependsOn`.
+Actualiza el estado de cada tarea en tasks.json según tu protocolo.
+Al terminar, devuelve un resumen: tareas completadas + archivos creados/modificados.
+```
+
+**3.3** El sub-agente lee esos archivos, implementa y **gestiona él mismo** el estado de cada tarea en `tasks.json` (ver el "Protocolo de tarea" del propio sub-agente). Formato por tarea:
 ```python
-import json
-from datetime import datetime
-
-# Al iniciar
-data = json.load(open(TASKS_FILE))
-for t in data['tasks']:
-    if t['id'] == 'TASK-X.X':
-        t['status'] = 'in_progress'
-        t['startedAt'] = datetime.now().isoformat()
-with open(TASKS_FILE, 'w') as f: json.dump(data, f, indent=2)
-
-# Al completar
-for t in data['tasks']:
-    if t['id'] == 'TASK-X.X':
-        t['status'] = 'completed'
-        t['completedAt'] = datetime.now().isoformat()
-with open(TASKS_FILE, 'w') as f: json.dump(data, f, indent=2)
+# Al iniciar:   t['status']='in_progress'; t['startedAt']=now
+# Al completar: t['status']='completed';   t['completedAt']=now
 ```
 
-Actualizar metadata a `"implementation_in_progress"` al iniciar la primera tarea.
+**3.4** Antes de invocar, `stive-sdlc` pone metadata en `"implementation_in_progress"`. Al **regresar** el sub-agente, `stive-sdlc` verifica en `tasks.json` que **todas** las tareas queden `completed`; si alguna quedó pendiente → reanudar invocando de nuevo al sub-agente con las tareas restantes.
 
 Cuando todas las tareas estén completadas:
 1. `status: "implementation_completed"`

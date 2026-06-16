@@ -91,7 +91,7 @@ echo "✅ Proyecto detectado — $JAVA_FILES clases Java"
 Lee y aplica completamente:
 
 ```
-.github/skills/tech-auditor/SKILL.md
+`tech-auditor`
 ```
 
 El skill ejecuta 8 pasos de análisis:

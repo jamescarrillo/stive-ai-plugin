@@ -1,13 +1,13 @@
 ---
 name: restructure-guide
-description: Guía paso a paso para migrar un proyecto Spring Boot tradicional a Quarkus con restructuración a arquitectura hexagonal (Opción B del spring-to-quarkus AGENT.md).
+description: Guía paso a paso para migrar un proyecto Spring Boot tradicional a Quarkus con restructuración a arquitectura hexagonal (Opción B del agente spring-to-quarkus).
 ---
 
 # Guía: Migración + Restructuración a Hexagonal Quarkus (Opción B)
 
 ## Cuándo usar esta guía
 
-Cuando el usuario elige **Opción B** en `spring-to-quarkus/AGENT.md`:
+Cuando el usuario elige **Opción B** en `spring-to-quarkus`:
 - Origen: Spring Boot **tradicional** (`sourceStructure = "traditional"`)
 - Destino: Quarkus **hexagonal** (`migrationStyle = "restructure_hexagonal"`)
 
@@ -15,7 +15,7 @@ Esta guía combina dos transformaciones simultáneas:
 1. **Migración tecnológica**: Spring Boot → Quarkus (stack)
 2. **Restructuración arquitectónica**: tradicional → hexagonal (estructura)
 
-> **Prerequisito**: el proyecto Quarkus de destino debe existir vacío antes de iniciar. Ver `AGENT.md` Paso 1 para crear el `pom.xml` Quarkus desde cero.
+> **Prerequisito**: el proyecto Quarkus de destino debe existir vacío antes de iniciar. Ver el agente `spring-to-quarkus` (Paso 1) para crear el `pom.xml` Quarkus desde cero.
 
 ---
 
@@ -261,12 +261,12 @@ public class OpenAccountService implements OpenAccountUseCase {
 
 ## Fase 4 — Infrastructure Quarkus
 
-Esta fase sigue exactamente los templates de `quarkus-engineer/AGENT.md`:
+Esta fase sigue exactamente los templates de `quarkus-engineer`:
 - **Inbound**: Controllers JAX-RS (`@Path`, `@POST`, `@GET`) + DTOs + MapStruct `componentModel="cdi"`
 - **Outbound**: `[Nombre]Entity` (JPA sin cambios) + `[Nombre]PanacheRepository` + `[Nombre]JpaAdapter`
 - **Error handling**: `@Provider ExceptionMapper<T>` por cada excepción de dominio
 
-Ver secciones "Templates: Modo Hexagonal" en `quarkus-engineer/AGENT.md`.
+Ver secciones "Templates: Modo Hexagonal" en `quarkus-engineer`.
 
 ---
 

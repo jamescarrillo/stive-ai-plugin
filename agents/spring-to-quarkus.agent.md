@@ -1,3 +1,10 @@
+---
+name: spring-to-quarkus
+description: Migra microservicios Java de Spring Boot 2.x/3.x a Quarkus 3.x LTS manteniendo hexagonal, dominio puro, APIs BIAN y cobertura ≥ 95%. Soporta hexagonal→hexagonal, traditional→traditional y traditional→hexagonal. Sub-agente invocado por stive-sdlc.
+tools: ['read', 'edit', 'search', 'execute', 'todo']
+user-invocable: false
+---
+
 # Agent: Spring to Quarkus Migration
 
 ## Propósito
@@ -15,8 +22,10 @@ asigna cuando `implementationType` es `migration`. **stive-sdlc selecciona el su
 - `.github/specs/HU-XXX.md` — spec técnico con `bianservicedomain`, `basepackage`
 - `.github/plans/HU-XXX/tasks.json` — plan de migración aprobado
 - Proyecto Spring Boot existente en `src/`
-- `.github/agents/spring-to-quarkus/dependency-mapping.md` — mapeo de dependencias
-- `.github/agents/spring-to-quarkus/migration-rules.md` — reglas de migración
+- `agents/spring-to-quarkus/dependency-mapping.md` — mapeo de dependencias
+- `agents/spring-to-quarkus/migration-rules.md` — reglas de migración
+- `agents/spring-to-quarkus/restructure-guide.md` — guía detallada de reestructuración (Opción B)
+- `agents/spring-to-quarkus/checklist.md` — checklist de verificación post-migración
 
 ---
 
@@ -110,7 +119,7 @@ Reglas adicionales para `same_pattern`:
 
 ### Opción B — Reestructurar a hexagonal (`migrationStyle: restructure_hexagonal`)
 
-> **Guía detallada**: `.github/agents/spring-to-quarkus/restructure-guide.md`
+> **Guía detallada**: `agents/spring-to-quarkus/restructure-guide.md`
 > Esta guía contiene el proceso completo fase por fase. Leerla antes de iniciar las tareas.
 
 Resumen de fases (detalle en `restructure-guide.md`):
@@ -119,7 +128,7 @@ Resumen de fases (detalle en `restructure-guide.md`):
 2. **Fase 1 — Dominio**: extraer lógica de negocio de `@Service` → Aggregate Roots puros en `domain/`; identificar Value Objects y excepciones de dominio
 3. **Fase 2 — Puertos**: definir Inbound Ports desde los endpoints del `@Controller`; Outbound Ports desde los `@Repository`
 4. **Fase 3 — Application Services**: implementar con `@ApplicationScoped` (CDI Quarkus); orquestación pura sin lógica de negocio
-5. **Fase 4 — Infrastructure Quarkus**: Controllers JAX-RS + `PanacheRepositoryBase` + JPA Adapters + `@Provider ExceptionMapper` (usar templates de `quarkus-engineer/AGENT.md`)
+5. **Fase 4 — Infrastructure Quarkus**: Controllers JAX-RS + `PanacheRepositoryBase` + JPA Adapters + `@Provider ExceptionMapper` (usar templates de `quarkus-engineer`)
 6. **Fase 5 — Tests**: `@QuarkusTest` + REST Assured; Mockito puro para Application Services
 
 Principios para `restructure_hexagonal`:

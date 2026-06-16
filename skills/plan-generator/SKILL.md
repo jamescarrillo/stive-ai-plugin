@@ -280,7 +280,7 @@ TASK-2.4: Registrar Application Services en DomainConfig (ADR-2)
   - infrastructure/config/DomainConfig.java (crear o actualizar si ya existe)
   - @Configuration con un @Bean por cada Application Service de la HU
   - Cada @Bean recibe sus OutboundPorts por constructor (Spring los inyecta vía tipo)
-  - Referencia: spring-engineer/AGENT.md → "Template DomainConfig"
+  - Referencia: spring-engineer → "Template DomainConfig"
 ```
 
 #### Grupo 3: Capa Infrastructure — Inbound (REST)
@@ -338,7 +338,7 @@ TASK-4.5: Crear adaptador externo (si hay servicios externos)
   - [ExternalService]WebClientAdapter.java
     Implements [ExternalService]Port
     Usar WebClient + Resilience4j CircuitBreaker
-    Referencia: .github/skills/spring-boot/spring-webclient-configurator/SKILL.md
+    Referencia: `spring-webclient-configurator`
 ```
 
 #### Grupo 5: Manejo global de errores

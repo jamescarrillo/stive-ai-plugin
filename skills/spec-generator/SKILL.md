@@ -114,7 +114,7 @@ Lee `.github/specs/HU-XXX.md` completamente. Extrae:
 - Criterios de aceptación (CA-X)
 - Requisitos funcionales inferidos
 
-Consulta `.github/docs/architecture.md` para recordar convenciones BIAN, DDD y estructura de paquetes.
+Consulta `docs/architecture.md` para recordar convenciones BIAN, DDD y estructura de paquetes.
 
 ---
 

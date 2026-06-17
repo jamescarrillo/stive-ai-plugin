@@ -4,9 +4,34 @@ Plugin de **agentes de IA para el SDLC de microservicios Java** (Spring Boot 3.x
 
 > El manifiesto `plugin.json` declara, en arrays, la **carpeta de cada agente** y las **raíces de skills**. VS Code registra como agente **cada `.md`** dentro de una carpeta de agente declarada; por eso los entries que deben quedar fuera del picker llevan `user-invocable: false`. Seleccionables en el picker de Copilot: solo `stive-sdlc` y `stive-auditor`. Ver **Reglas de descubrimiento** más abajo.
 
-## Instalación (install from source)
+## Instalación
 
-Pasa este repositorio al instalador de Agent Plugins de VS Code. El plugin queda registrado bajo `~/.copilot/installed-plugins/` y sus agentes aparecen en el picker del chat de Copilot.
+Es un **Agent Plugin de VS Code (preview)**. Hay dos formas de instalarlo; con cualquiera, sus agentes aparecen en el picker del chat de Copilot.
+
+> Requiere VS Code con GitHub Copilot y la función de plugins habilitada (es *Experimental*).
+
+### Método 1 — Clonar y registrar la ruta (*Plugin Locations*)
+1. Clona el repositorio:
+   ```bash
+   git clone https://github.com/jamescarrillo/stive-ai-plugin.git
+   ```
+2. Abre **Settings** (`Cmd/Ctrl + ,`) y busca **`plugin locations`**.
+3. En **Chat: Plugin Locations** (*Experimental*) → **Add Item**:
+   - **Item**: la ruta a la carpeta clonada (absoluta, relativa al workspace, o con `~/`). Ej.: `~/dev/stive-ai-plugin`.
+   - **Value**: `true` (habilitado).
+   - **OK**.
+4. Recarga VS Code. Los agentes `stive-sdlc` y `stive-auditor` aparecen en el picker.
+
+### Método 2 — Install Plugin from Source (URL)
+1. Abre la **Command Palette** (`Cmd/Ctrl + Shift + P`).
+2. Ejecuta **`Chat: Install Plugin from Source`**.
+3. Pega la URL del repo y **Enter**:
+   ```
+   https://github.com/jamescarrillo/stive-ai-plugin.git
+   ```
+   El plugin queda registrado bajo `~/.copilot/installed-plugins/`.
+
+> Tras instalar, abre el **repo del microservicio** como carpeta raíz, selecciona `stive-sdlc` en el picker y sigue con *Cómo configurar el entorno y usarlo*.
 
 ## Configuración (`/init`) y servidores MCP
 
@@ -78,14 +103,15 @@ El MCP **remoto** no requiere token (usa OAuth). El **script local** sí — út
 5. Ejecuta **`verifica requisitos`** → debe salir **"Entorno listo"**. (Si falla, corrige y repite; la HU **no** inicia hasta que pase.)
 
 ### B. Usarlo (por cada HU)
-1. **`busca HUs en <proyecto>`** *(opcional)* → lista las HUs disponibles en JIRA.
-2. **`implementa SCRUM-XX`** → arranca el flujo. Stive valida el gate (config + pre-flight) y avanza por 4 etapas, **deteniéndose en cada checkpoint** para tu aprobación:
+1. **`implementa SCRUM-XX`** → arranca el flujo (usa directo la clave de la HU). Stive valida el gate (config + pre-flight) y avanza por 4 etapas, **deteniéndose en cada checkpoint** para tu aprobación:
    - **Etapa 1 — Spec**: lee la HU de JIRA → spec técnico. → *apruebas*.
    - **Etapa 2 — Plan**: tareas atómicas por capa. → *apruebas*.
    - **Etapa 3 — Código**: implementa hexagonal + tests (corre `mvn`/`gradle`). → *apruebas*.
    - **Etapa 4 — PR o commit**: según `github.createPr` → crea el PR, o hace commit local y te recuerda el PR manual.
-3. **`continúa SCRUM-XX`** → reanuda donde quedó (el estado se guarda en `.github/specs/.metadata/`).
-4. **`muestra el estado de SCRUM-XX`** → resumen del avance.
+2. **`continúa SCRUM-XX`** → reanuda donde quedó (el estado se guarda en `.github/specs/.metadata/`).
+3. **`muestra el estado de SCRUM-XX`** → resumen del avance.
+
+> ¿No sabes la clave? **`busca HUs en <proyecto>`** lista las HUs disponibles en JIRA (opcional).
 
 > En cada checkpoint respondes **"Aprobar"**, das **feedback** para ajustar, o **"Rechazar"**. Nada avanza sin tu confirmación.
 

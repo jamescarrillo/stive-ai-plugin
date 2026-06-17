@@ -108,11 +108,21 @@ Aplica el procedimiento de **`agents/stive-sdlc/init.md`**: presenta **2 selecto
 
 ---
 
-## PASO 0 — Pre-flight: validar entorno
+## PASO 0 — Gate obligatorio (config + pre-flight)
 
-Ejecutar **siempre** al recibir `"implementa HU-XXX"`, `"continúa HU-XXX"` o `"verifica requisitos"`.
+**Ejecutar SIEMPRE al recibir `implementa`, `continúa` o `verifica requisitos`. Es un gate: no se puede saltar.**
 
-Ejecuta el script de validación de **`agents/stive-sdlc/preflight.md`** (Python 3.8+, Atlassian MCP accesible, repo git, remote git, Node.js). Si reporta uno o más errores → **detener** y mostrar el reporte correctivo. **No continuar a PASO 1** hasta que el entorno esté listo.
+**Gate 1 — Config existe (solo para `implementa`/`continúa`):**
+Si **no existe** `.github/stive.config.json` → **DETENER**. No iniciar la implementación. Responder:
+```
+⛔ Este repo no está configurado. Corre  /init  antes de implementar una HU
+   (define cómo conectar a JIRA y si crea PR o commit, y valida tus requisitos).
+```
+
+**Gate 2 — Pre-flight según config:**
+Ejecuta el script de **`agents/stive-sdlc/preflight.md`** (valida solo lo que tu config requiere: JIRA remoto/local, GitHub PR/commit). Si `PREFLIGHT_ERRORS > 0` → **DETENER** y mostrar el reporte correctivo (asistiendo a configurar lo que falte, como en `/init`).
+
+> **Regla dura:** con cualquiera de los dos gates en rojo, **NUNCA** continuar a PASO 1 ni a la Etapa 1. La implementación de la HU no inicia hasta que ambos gates estén en verde. (`verifica requisitos` por sí solo puede correr con defaults y solo reporta.)
 
 ---
 

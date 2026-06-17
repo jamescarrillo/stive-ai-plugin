@@ -62,6 +62,33 @@ El MCP **remoto** no requiere token (usa OAuth). El **script local** sí — út
 
 `github.createPr` está en `false` (commit local) por defecto porque muchas cuentas corporativas **no permiten generar PAT**. Si la tuya sí: crea un PAT (scope `repo`), ponlo en la env var `GITHUB_TOKEN` y elige `PR` en `/init` (`github.createPr = true`). El paquete `@modelcontextprotocol/server-github` está deprecado pero funciona vía npx; alternativa oficial: MCP remoto `https://api.githubcopilot.com/mcp` o el binario `github-mcp-server`.
 
+## Cómo configurar el entorno y usarlo
+
+### A. Configurar el entorno (una vez por repo)
+1. **Instala el plugin** (ver *Instalación*) y abre el **repo del microservicio** como carpeta raíz en VS Code.
+2. En el chat de Copilot, **selecciona el agente `stive-sdlc`**.
+3. Ejecuta **`/init`** y responde los 2 selectores:
+   - **JIRA**: `remoto` (OAuth) o `local` (API token).
+   - **GitHub**: `commit` (default) o `PR`.
+   `/init` prueba la conexión y, **si faltan variables de entorno, te asiste para crearlas**.
+4. **Configura las env vars que tu selección requiera** (si `/init` te lo pidió):
+   - JIRA `local` → `JIRA_BASE_URL`, `JIRA_USER_EMAIL`, `JIRA_API_TOKEN` (ver *Generar un API token de Atlassian*).
+   - GitHub `PR` → `GITHUB_TOKEN` (PAT scope `repo`).
+   Ponlas en tu perfil (`~/.zshrc` / `~/.bashrc`) y **reinicia VS Code** para que el plugin las tome.
+5. Ejecuta **`verifica requisitos`** → debe salir **"Entorno listo"**. (Si falla, corrige y repite; la HU **no** inicia hasta que pase.)
+
+### B. Usarlo (por cada HU)
+1. **`busca HUs en <proyecto>`** *(opcional)* → lista las HUs disponibles en JIRA.
+2. **`implementa SCRUM-XX`** → arranca el flujo. Stive valida el gate (config + pre-flight) y avanza por 4 etapas, **deteniéndose en cada checkpoint** para tu aprobación:
+   - **Etapa 1 — Spec**: lee la HU de JIRA → spec técnico. → *apruebas*.
+   - **Etapa 2 — Plan**: tareas atómicas por capa. → *apruebas*.
+   - **Etapa 3 — Código**: implementa hexagonal + tests (corre `mvn`/`gradle`). → *apruebas*.
+   - **Etapa 4 — PR o commit**: según `github.createPr` → crea el PR, o hace commit local y te recuerda el PR manual.
+3. **`continúa SCRUM-XX`** → reanuda donde quedó (el estado se guarda en `.github/specs/.metadata/`).
+4. **`muestra el estado de SCRUM-XX`** → resumen del avance.
+
+> En cada checkpoint respondes **"Aprobar"**, das **feedback** para ajustar, o **"Rechazar"**. Nada avanza sin tu confirmación.
+
 ## Agentes del picker
 
 | Agente | Archivo | Propósito |

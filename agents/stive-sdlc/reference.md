@@ -22,7 +22,7 @@ Según `jira.mode` (config): `remote` → servidor `atlassian`; `local` → serv
 | `transitionJiraIssue` | Etapa 1 aprobada → `IN_PROGRESS` \| Etapa 4 → `IN_REVIEW` |
 | `getVisibleJiraProjects` | Ver proyectos disponibles |
 
-### GitHub MCP — servidor `github` (`npx`, PAT) — solo si `github.createPr=true`
+### GitHub MCP — servidor `github` (HTTP remoto oficial, PAT) — solo si `github.createPr=true`
 
 | Tool | Cuándo |
 |------|--------|

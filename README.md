@@ -10,27 +10,26 @@ Pasa este repositorio al instalador de Agent Plugins de VS Code. El plugin queda
 
 ## Configuración (`/init`) y servidores MCP
 
-La primera vez en un repo, pídele a `stive-sdlc`: **`/init`**. Te pregunta tus preferencias, crea `.github/stive.config.json` y las carpetas de artefactos. **Los requisitos a cumplir dependen de esta config.**
+La primera vez en un repo, pídele a `stive-sdlc`: **`/init`**. Presenta **2 selectores** que confirmas — tipo de JIRA y modo de GitHub — prueba la conexión, crea `.github/stive.config.json` y las carpetas de artefactos. **Los requisitos a cumplir dependen de esta config.**
 
 ```json
-{ "jira": { "mode": "auto" }, "github": { "enabled": false } }
+{ "jira": { "mode": "remote" }, "github": { "createPr": false } }
 ```
 
 | Opción | Valores | Significado |
 |---|---|---|
-| `jira.mode` | `auto` (default) | Intenta el MCP remoto de Atlassian; si no conecta (proxy/restricciones), cae al **script local**. |
-| | `mcp` | Solo Atlassian remoto (OAuth). |
-| | `script` | Solo el script local `scripts/jira_mcp_server.py` (API token). |
-| `github.enabled` | `false` (default) | El PR **no** es parte del flujo: Etapa 4 hace **commit en la rama local** y el PR lo creas tú. |
+| `jira.mode` | `remote` (default) | JIRA vía MCP remoto de Atlassian (OAuth en el navegador). Servidor `atlassian`. |
+| | `local` | JIRA vía script local `scripts/jira_mcp_server.py` (API token). Servidor `jira-local`. |
+| `github.createPr` | `false` (default) | Etapa 4 hace **commit en la rama local**; el PR lo creas tú. |
 | | `true` | Stive crea el PR vía GitHub MCP (requiere un PAT en `GITHUB_TOKEN`). |
 
 ### Servidores MCP declarados (`.mcp.json`)
 
 | Servidor | Tipo | Se usa cuando | Cómo arranca |
 |---|---|---|---|
-| `atlassian` | Remoto (HTTP, Atlassian) | `jira.mode` = `mcp` o `auto` (con conexión) | VS Code abre **OAuth en el navegador** la 1ª vez. No requiere token. |
-| `jira-local` | Local (Python) | `jira.mode` = `script`, o `auto` sin conexión al remoto | VS Code ejecuta `scripts/jira_mcp_server.py` con **API token** (env vars). |
-| `github` | Local (npx) | `github.enabled` = `true` | VS Code lanza `npx` bajo demanda; requiere **`GITHUB_TOKEN`** y Node.js. |
+| `atlassian` | Remoto (HTTP, Atlassian) | `jira.mode` = `remote` | VS Code abre **OAuth en el navegador** la 1ª vez. No requiere token. |
+| `jira-local` | Local (Python) | `jira.mode` = `local` | VS Code ejecuta `scripts/jira_mcp_server.py` con **API token** (env vars). |
+| `github` | Local (npx) | `github.createPr` = `true` | VS Code lanza `npx` bajo demanda; requiere **`GITHUB_TOKEN`** y Node.js. |
 
 > No se arrancan a mano — VS Code gestiona el ciclo de vida.
 
@@ -38,14 +37,14 @@ La primera vez en un repo, pídele a `stive-sdlc`: **`/init`**. Te pregunta tus 
 
 | Si tu config es… | Necesitas |
 |---|---|
-| `jira.mode = mcp` | Conexión a `mcp.atlassian.com` + autorizar el OAuth. **Nada de tokens.** |
-| `jira.mode = script` (o `auto` sin red al remoto) | Python 3.8+ con `requests` (`pip install -r scripts/requirements.txt`) y las env vars `JIRA_BASE_URL`, `JIRA_USER_EMAIL`, `JIRA_API_TOKEN`. |
-| `github.enabled = false` | Nada extra (commit local, PR manual). |
-| `github.enabled = true` | Node.js + `GITHUB_TOKEN` (PAT con scope `repo`). |
+| `jira.mode = remote` | Conexión a `mcp.atlassian.com` + autorizar el OAuth. **Nada de tokens.** |
+| `jira.mode = local` | Python 3.8+ con `requests` (`pip install -r scripts/requirements.txt`) y las env vars `JIRA_BASE_URL`, `JIRA_USER_EMAIL`, `JIRA_API_TOKEN`. |
+| `github.createPr = false` | Nada extra (commit local, PR manual). |
+| `github.createPr = true` | Node.js + `GITHUB_TOKEN` (PAT con scope `repo`). |
 
 Siempre: estar dentro de un repo git. Verifica con **`verifica requisitos`** (el pre-flight valida solo lo que tu config necesita).
 
-### Generar un API token de Atlassian (para `jira.mode = script`)
+### Generar un API token de Atlassian (para `jira.mode = local`)
 
 El MCP **remoto** no requiere token (usa OAuth). El **script local** sí — útil en entornos donde el OAuth/MCP remoto está bloqueado pero la cuenta sí permite API tokens:
 
@@ -61,7 +60,7 @@ El MCP **remoto** no requiere token (usa OAuth). El **script local** sí — út
 
 ### Nota sobre GitHub
 
-`github.enabled` está en `false` por defecto porque muchas cuentas corporativas **no permiten generar PAT**. Si la tuya sí: crea un PAT (scope `repo`), ponlo en la env var `GITHUB_TOKEN` y activa `github.enabled = true` con `/init`. El paquete `@modelcontextprotocol/server-github` está deprecado pero funciona vía npx; alternativa oficial: MCP remoto `https://api.githubcopilot.com/mcp` o el binario `github-mcp-server`.
+`github.createPr` está en `false` (commit local) por defecto porque muchas cuentas corporativas **no permiten generar PAT**. Si la tuya sí: crea un PAT (scope `repo`), ponlo en la env var `GITHUB_TOKEN` y elige `PR` en `/init` (`github.createPr = true`). El paquete `@modelcontextprotocol/server-github` está deprecado pero funciona vía npx; alternativa oficial: MCP remoto `https://api.githubcopilot.com/mcp` o el binario `github-mcp-server`.
 
 ## Agentes del picker
 

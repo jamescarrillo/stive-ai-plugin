@@ -87,9 +87,9 @@ Cuando el usuario diga `"hola"`, `"qué puedes hacer"`, `"qué eres"`, `"help"` 
 
 Cuando el usuario escriba `/init`, `init`, `configura` o `inicializa stive`:
 
-Aplica el procedimiento de **`agents/stive-sdlc/init.md`**: pregunta en el chat el modo de JIRA (`auto`/`mcp`/`script`) y si habilita GitHub (default `no`), escribe `.github/stive.config.json` y crea las carpetas de artefactos (`.github/specs`, `.github/specs/.metadata`, `.github/plans`). Termina sugiriendo `verifica requisitos`.
+Aplica el procedimiento de **`agents/stive-sdlc/init.md`**: presenta **2 selectores** que el usuario confirma — (1) tipo de JIRA `remoto`/`local` (y prueba la conexión), (2) GitHub `PR`/`commit` (default `commit`) — escribe `.github/stive.config.json` y crea las carpetas de artefactos (`.github/specs`, `.github/specs/.metadata`, `.github/plans`). Termina sugiriendo `verifica requisitos`.
 
-> Si el usuario intenta `implementa`/`continúa` y **no existe** `.github/stive.config.json`, ofrece correr `/init` primero (o continúa con defaults `auto`/`false` avisando).
+> Si el usuario intenta `implementa`/`continúa` y **no existe** `.github/stive.config.json`, ofrece correr `/init` primero (o continúa con defaults `remote`/`commit` avisando).
 
 ---
 
@@ -170,7 +170,7 @@ Sigue el procedimiento de **`agents/stive-sdlc/detection.md`**: detecta `framewo
 
 ### Etapa 1: JIRA → Spec Técnico
 
-> **Conexión a JIRA según config** (`EFFECTIVE_JIRA` resuelto en el pre-flight): si es `mcp`, llama a los tools del servidor **`atlassian`** (`atlassian/getJiraIssueDetails`, ...); si es `script`, llama a los **mismos nombres** en el servidor **`jira-local`** (`jira-local/getJiraIssueDetails`, ...), que envuelve `scripts/jira_mcp_server.py`. La lógica del flujo es idéntica; solo cambia el servidor MCP.
+> **Conexión a JIRA según `jira.mode` (config):** si es `remote`, llama a los tools del servidor **`atlassian`** (`atlassian/getJiraIssueDetails`, ...); si es `local`, llama a los **mismos nombres** en el servidor **`jira-local`** (`jira-local/getJiraIssueDetails`, ...), que envuelve `scripts/jira_mcp_server.py`. La lógica del flujo es idéntica; solo cambia el servidor MCP.
 
 **1.1** Leer la HU y escribir spec inicial:
 ```
@@ -308,9 +308,9 @@ Checkpoint 3:
 
 ### Etapa 4: Código → PR (o commit local)
 
-**El comportamiento depende de `github.enabled` (config).** Validaciones pre-PR siempre primero (build, tests, cobertura, pureza, BIAN) y la transición de JIRA va por el servidor configurado (`atlassian` | `jira-local`).
+**El comportamiento depende de `github.createPr` (config).** Validaciones pre-PR siempre primero (build, tests, cobertura, pureza, BIAN) y la transición de JIRA va por el servidor configurado (`atlassian` | `jira-local`).
 
-**Caso A — `github.enabled = false` (default):** **commit local, sin PR.**
+**Caso A — `github.createPr = false` (default):** **commit local, sin PR.**
 ```
 1. Validaciones pre-PR
 2. git add -A && git commit -m "feat(HU-XXX): <resumen>"   (en la rama feature/hu-xxx, local)
@@ -330,7 +330,7 @@ Checkpoint 4-A:
 ╚═══════════════════════════════════════════════════════╝
 ```
 
-**Caso B — `github.enabled = true`:** **PR vía GitHub MCP.**
+**Caso B — `github.createPr = true`:** **PR vía GitHub MCP.**
 ```
 Lee y aplica: `pr-creator`
 1. Validaciones pre-PR
@@ -358,8 +358,8 @@ Checkpoint 4-B:
 
 Catálogo completo en **`agents/stive-sdlc/reference.md`**:
 
-- **MCP JIRA** — según `jira.mode` (config): servidor `atlassian` (remoto, OAuth) **o** `jira-local` (script `scripts/jira_mcp_server.py`, API token). Mismos tools: `getJiraIssueDetails`, `searchJiraIssuesUsingJQL`, `transitionJiraIssue`, `getVisibleJiraProjects`.
-- **MCP GitHub** — solo si `github.enabled=true`: `create_pull_request`, `create_branch`, `push_files`, ...
+- **MCP JIRA** — según `jira.mode` (config): `remote` → servidor `atlassian` (OAuth); `local` → `jira-local` (script `scripts/jira_mcp_server.py`, API token). Mismos tools: `getJiraIssueDetails`, `searchJiraIssuesUsingJQL`, `transitionJiraIssue`, `getVisibleJiraProjects`.
+- **MCP GitHub** — solo si `github.createPr=true`: `create_pull_request`, `create_branch`, `push_files`, ...
 - **Skills** (invocados por nombre): `spec-generator`, `plan-generator`, `pr-creator`, validadores y especialistas por etapa.
 - **Sub-agentes** (invocados por nombre, declarados en `agents:`): `spring-engineer`, `quarkus-engineer`, `spring-to-quarkus`.
 

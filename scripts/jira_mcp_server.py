@@ -31,7 +31,6 @@ API_TOKEN = os.environ.get("JIRA_API_TOKEN", "")
 
 SPECS_DIR = Path(".github/specs")
 METADATA_DIR = SPECS_DIR / ".metadata"
-PLAN_DIR = Path(".github/modernize")
 
 
 # ---------------------------------------------------------------------------
@@ -417,14 +416,23 @@ def _tool_get_issue_details(issue_id_or_key: str) -> dict:
     spec_path = SPECS_DIR / f"{issue_id_or_key}.md"
     spec_path.write_text(content, encoding="utf-8")
 
-    meta = {
+    # Merge en el metadata existente (preserva la detección de PASO 2:
+    # framework, projectStructure, frameworkMajor, basePackage, hexDirs...)
+    # en lugar de sobrescribir.
+    meta_path = METADATA_DIR / f"{issue_id_or_key}.json"
+    meta = {}
+    if meta_path.exists():
+        try:
+            meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        except Exception:
+            meta = {}
+    meta.update({
         "issue_key": issue_id_or_key,
         "timestamp": datetime.now().isoformat(),
         "spec_file": str(spec_path),
         "atlassian_url": JIRA_BASE,
         "status": "spec_generated",
-    }
-    meta_path = METADATA_DIR / f"{issue_id_or_key}.json"
+    })
     meta_path.write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8")
 
     fields = issue.get("fields", {})

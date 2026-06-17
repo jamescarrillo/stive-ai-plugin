@@ -4,31 +4,116 @@ Plugin de **agentes de IA para el SDLC de microservicios Java** (Spring Boot 3.x
 
 > El manifiesto `plugin.json` declara, en arrays, la **carpeta de cada agente** y las **raíces de skills**. VS Code registra como agente **cada `.md`** dentro de una carpeta de agente declarada; por eso los entries que deben quedar fuera del picker llevan `user-invocable: false`. Seleccionables en el picker de Copilot: solo `stive-sdlc` y `stive-auditor`. Ver **Reglas de descubrimiento** más abajo.
 
-## Instalación (install from source)
+## Instalación
 
-Pasa este repositorio al instalador de Agent Plugins de VS Code. El plugin queda registrado bajo `~/.copilot/installed-plugins/` y sus agentes aparecen en el picker del chat de Copilot.
+Es un **Agent Plugin de VS Code (preview)**. Hay dos formas de instalarlo; con cualquiera, sus agentes aparecen en el picker del chat de Copilot.
 
-## Servidores MCP
+> Requiere VS Code con GitHub Copilot y la función de plugins habilitada (es *Experimental*).
 
-El plugin declara dos servidores MCP en **`.mcp.json`** (enlazado desde `plugin.json` con `"mcpServers": ".mcp.json"`):
+### Método 1 — Clonar y registrar la ruta (*Plugin Locations*)
+1. Clona el repositorio:
+   ```bash
+   git clone https://github.com/jamescarrillo/stive-ai-plugin.git
+   ```
+2. Abre **Settings** (`Cmd/Ctrl + ,`) y busca **`plugin locations`**.
+3. En **Chat: Plugin Locations** (*Experimental*) → **Add Item**:
+   - **Item**: la ruta a la carpeta clonada (absoluta, relativa al workspace, o con `~/`). Ej.: `~/dev/stive-ai-plugin`.
+   - **Value**: `true` (habilitado).
+   - **OK**.
+4. Recarga VS Code. Los agentes `stive-sdlc` y `stive-auditor` aparecen en el picker.
 
-| Servidor | Tipo | Para qué | Cómo arranca |
+### Método 2 — Install Plugin from Source (URL)
+1. Abre la **Command Palette** (`Cmd/Ctrl + Shift + P`).
+2. Ejecuta **`Chat: Install Plugin from Source`**.
+3. Pega la URL del repo y **Enter**:
+   ```
+   https://github.com/jamescarrillo/stive-ai-plugin.git
+   ```
+   El plugin queda registrado bajo `~/.copilot/installed-plugins/`.
+
+> Tras instalar, abre el **repo del microservicio** como carpeta raíz, selecciona `stive-sdlc` en el picker y sigue con *Cómo configurar el entorno y usarlo*.
+
+## Configuración (`/init`) y servidores MCP
+
+La primera vez en un repo, pídele a `stive-sdlc`: **`/init`**. Presenta **2 selectores** que confirmas — tipo de JIRA y modo de GitHub — prueba la conexión, crea `.github/stive.config.json` y las carpetas de artefactos. **Los requisitos a cumplir dependen de esta config.**
+
+```json
+{ "jira": { "mode": "remote" }, "github": { "createPr": false } }
+```
+
+| Opción | Valores | Significado |
+|---|---|---|
+| `jira.mode` | `remote` (default) | JIRA vía MCP remoto de Atlassian (OAuth en el navegador). Servidor `atlassian`. |
+| | `local` | JIRA vía script local `scripts/jira_mcp_server.py` (API token). Servidor `jira-local`. |
+| `github.createPr` | `false` (default) | Etapa 4 hace **commit en la rama local**; el PR lo creas tú. |
+| | `true` | Stive crea el PR vía GitHub MCP (requiere un PAT en `GITHUB_TOKEN`). |
+
+### Servidores MCP declarados (`.mcp.json`)
+
+| Servidor | Tipo | Se usa cuando | Cómo arranca |
 |---|---|---|---|
-| `atlassian` | **Remoto** (HTTP, hosted por Atlassian) | JIRA: leer la HU, transicionar estados | No se arranca: VS Code se conecta al endpoint remoto y abre **OAuth en el navegador** la primera vez. |
-| `github` | **Local (npx)** | Crear PR, push, ramas | VS Code lanza `npx` **bajo demanda** cuando un agente lo invoca. |
+| `atlassian` | Remoto (HTTP, Atlassian) | `jira.mode` = `remote` | VS Code abre **OAuth en el navegador** la 1ª vez. No requiere token. |
+| `jira-local` | Local (Python) | `jira.mode` = `local` | VS Code ejecuta `scripts/jira_mcp_server.py` con **API token** (env vars). |
+| `github` | Local (npx) | `github.createPr` = `true` | VS Code lanza `npx` bajo demanda; requiere **`GITHUB_TOKEN`** y Node.js. |
 
-> No hay que arrancar los MCP a mano — VS Code gestiona su ciclo de vida. El remoto está siempre disponible (solo te autenticas); el de `npx` se levanta solo al usarlo.
+> No se arrancan a mano — VS Code gestiona el ciclo de vida.
 
-### Configuración previa (una vez)
+### Requisitos según tu config
 
-1. **GitHub (npx):** reemplaza `<TU_GITHUB_PAT>` en `.mcp.json` por tu Personal Access Token (scope `repo`). La primera invocación descarga el paquete vía npx, así que necesitas **Node.js** instalado.
-2. **JIRA (remoto):** no lleva token en el archivo. Al primer uso (ej. `getVisibleJiraProjects`), VS Code abre el **flujo OAuth de Atlassian** en el navegador para que autorices.
+| Si tu config es… | Necesitas |
+|---|---|
+| `jira.mode = remote` | Conexión a `mcp.atlassian.com` + autorizar el OAuth. **Nada de tokens.** |
+| `jira.mode = local` | Python 3.8+ con `requests` (`pip install -r scripts/requirements.txt`) y las env vars `JIRA_BASE_URL`, `JIRA_USER_EMAIL`, `JIRA_API_TOKEN`. |
+| `github.createPr = false` | Nada extra (commit local, PR manual). |
+| `github.createPr = true` | Node.js + `GITHUB_TOKEN` (PAT con scope `repo`). |
 
-### Verificar que está listo
+Siempre: estar dentro de un repo git. Verifica con **`verifica requisitos`** (el pre-flight valida solo lo que tu config necesita).
 
-Pídele a `stive-sdlc`: **`"verifica requisitos"`** → corre el pre-flight (`agents/stive-sdlc/preflight.md`), que comprueba que el MCP de Atlassian sea alcanzable y que Node.js esté disponible para el de GitHub.
+### Generar un API token de Atlassian (para `jira.mode = local`)
 
-> **Nota sobre el paquete de GitHub:** `@modelcontextprotocol/server-github` está **deprecado** (movido a `github/github-mcp-server`), pero sigue funcionando vía npx para las operaciones que usa Stive (PR, push, ramas). Si en el futuro quieres dejar npx, la alternativa oficial es el MCP remoto `https://api.githubcopilot.com/mcp` o el binario `github-mcp-server` (Docker).
+El MCP **remoto** no requiere token (usa OAuth). El **script local** sí — útil en entornos donde el OAuth/MCP remoto está bloqueado pero la cuenta sí permite API tokens:
+
+1. Ve a **https://id.atlassian.com/manage-profile/security/api-tokens**.
+2. **Create API token** → ponle un nombre (ej. `stive`) → copia el token.
+3. Exporta las env vars (en tu shell / perfil):
+   ```bash
+   export JIRA_BASE_URL="https://tu-dominio.atlassian.net"
+   export JIRA_USER_EMAIL="tu-correo@empresa.com"
+   export JIRA_API_TOKEN="<token-pegado>"
+   ```
+4. `pip install -r scripts/requirements.txt` y corre `verifica requisitos`.
+
+### Nota sobre GitHub
+
+`github.createPr` está en `false` (commit local) por defecto porque muchas cuentas corporativas **no permiten generar PAT**. Si la tuya sí: crea un PAT (scope `repo`), ponlo en la env var `GITHUB_TOKEN` y elige `PR` en `/init` (`github.createPr = true`). El paquete `@modelcontextprotocol/server-github` está deprecado pero funciona vía npx; alternativa oficial: MCP remoto `https://api.githubcopilot.com/mcp` o el binario `github-mcp-server`.
+
+## Cómo configurar el entorno y usarlo
+
+### A. Configurar el entorno (una vez por repo)
+1. **Instala el plugin** (ver *Instalación*) y abre el **repo del microservicio** como carpeta raíz en VS Code.
+2. En el chat de Copilot, **selecciona el agente `stive-sdlc`**.
+3. Ejecuta **`/init`** y responde los 2 selectores:
+   - **JIRA**: `remoto` (OAuth) o `local` (API token).
+   - **GitHub**: `commit` (default) o `PR`.
+   `/init` prueba la conexión y, **si faltan variables de entorno, te asiste para crearlas**.
+4. **Configura las env vars que tu selección requiera** (si `/init` te lo pidió):
+   - JIRA `local` → `JIRA_BASE_URL`, `JIRA_USER_EMAIL`, `JIRA_API_TOKEN` (ver *Generar un API token de Atlassian*).
+   - GitHub `PR` → `GITHUB_TOKEN` (PAT scope `repo`).
+   Ponlas en tu perfil (`~/.zshrc` / `~/.bashrc`) y **reinicia VS Code** para que el plugin las tome.
+5. Ejecuta **`verifica requisitos`** → debe salir **"Entorno listo"**. (Si falla, corrige y repite; la HU **no** inicia hasta que pase.)
+
+### B. Usarlo (por cada HU)
+1. **`implementa SCRUM-XX`** → arranca el flujo (usa directo la clave de la HU). Stive valida el gate (config + pre-flight) y avanza por 4 etapas, **deteniéndose en cada checkpoint** para tu aprobación:
+   - **Etapa 1 — Spec**: lee la HU de JIRA → spec técnico. → *apruebas*.
+   - **Etapa 2 — Plan**: tareas atómicas por capa. → *apruebas*.
+   - **Etapa 3 — Código**: implementa hexagonal + tests (corre `mvn`/`gradle`). → *apruebas*.
+   - **Etapa 4 — PR o commit**: según `github.createPr` → crea el PR, o hace commit local y te recuerda el PR manual.
+2. **`continúa SCRUM-XX`** → reanuda donde quedó (el estado se guarda en `.github/specs/.metadata/`).
+3. **`muestra el estado de SCRUM-XX`** → resumen del avance.
+
+> ¿No sabes la clave? **`busca HUs en <proyecto>`** lista las HUs disponibles en JIRA (opcional).
+
+> En cada checkpoint respondes **"Aprobar"**, das **feedback** para ajustar, o **"Rechazar"**. Nada avanza sin tu confirmación.
 
 ## Agentes del picker
 
@@ -59,11 +144,11 @@ HU de migración       → spring-to-quarkus
 
 ```
 plugin.json                      ← Manifiesto: declara las carpetas de agentes, las raíces de skills y .mcp.json
-.mcp.json                        ← Config MCP: atlassian (JIRA remoto) + github (npx)
+.mcp.json                        ← Config MCP: atlassian (remoto) · jira-local (script) · github (npx)
 agents/
   stive-sdlc/                    ← Orquestador SDLC (PICKER)
     stive-sdlc.agent.md            entry visible
-    preflight.md · detection.md · reference.md   (user-invocable: false)
+    init.md · preflight.md · detection.md · reference.md   (user-invocable: false)
   stive-auditor/                 ← Auditor / backlog (PICKER)
     stive-auditor.agent.md         entry visible
   spring-engineer/               ← Sub-agente Spring Boot (oculto)

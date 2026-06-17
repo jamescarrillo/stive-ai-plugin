@@ -10,7 +10,9 @@ user-invocable: false
 
 ## Herramientas MCP
 
-### Atlassian MCP (`mcp.atlassian.com` — OAuth2 automático)
+### JIRA — servidor `atlassian` (remoto, OAuth) o `jira-local` (script, API token)
+
+Según `jira.mode` (config): `remote` → servidor `atlassian`; `local` → servidor `jira-local` (`scripts/jira_mcp_server.py`). **Mismos nombres de tool** en ambos:
 
 | Tool | Cuándo |
 |------|--------|
@@ -20,7 +22,7 @@ user-invocable: false
 | `transitionJiraIssue` | Etapa 1 aprobada → `IN_PROGRESS` \| Etapa 4 → `IN_REVIEW` |
 | `getVisibleJiraProjects` | Ver proyectos disponibles |
 
-### GitHub MCP (`npx @modelcontextprotocol/server-github` — PAT via VS Code)
+### GitHub MCP — servidor `github` (`npx`, PAT) — solo si `github.createPr=true`
 
 | Tool | Cuándo |
 |------|--------|

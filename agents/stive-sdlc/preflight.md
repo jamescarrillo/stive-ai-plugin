@@ -62,17 +62,14 @@ else
   echo "  ❌ jira.mode desconocido: '$JIRA_MODE' (usa 'remote' o 'local' con /init)"; PREFLIGHT_ERRORS=$((PREFLIGHT_ERRORS+1))
 fi
 
-# 4. GitHub — solo si github.createPr=true
+# 4. GitHub — solo si github.createPr=true (MCP remoto oficial de GitHub)
 if [ "$GITHUB_PR" = "true" ]; then
-  command -v node >/dev/null 2>&1 \
-    && echo "  ✅ Node.js $(node --version) (GitHub MCP vía npx)" \
-    || { echo "  ❌ Node.js no instalado (requerido para el PR en Etapa 4)"; PREFLIGHT_ERRORS=$((PREFLIGHT_ERRORS+1)); }
   [ -n "$(printenv GITHUB_TOKEN)" ] \
     && echo "  ✅ GITHUB_TOKEN presente" \
-    || { echo "  ❌ GITHUB_TOKEN ausente (la cuenta debe permitir generar un PAT)"; PREFLIGHT_ERRORS=$((PREFLIGHT_ERRORS+1)); }
+    || { echo "  ❌ GITHUB_TOKEN ausente — define un PAT (scope 'repo') o elige 'commit' con /init"; PREFLIGHT_ERRORS=$((PREFLIGHT_ERRORS+1)); }
   [ -n "$(git remote 2>/dev/null | head -1)" ] \
     && echo "  ✅ Remote git: $(git remote get-url $(git remote|head -1) 2>/dev/null)" \
-    || { echo "  ❌ Sin remote git (necesario para push del PR)"; PREFLIGHT_ERRORS=$((PREFLIGHT_ERRORS+1)); }
+    || { echo "  ❌ Sin remote git (necesario para el PR)"; PREFLIGHT_ERRORS=$((PREFLIGHT_ERRORS+1)); }
 else
   echo "  ℹ️  GitHub en modo commit (github.createPr=false) → Etapa 4 hace commit local; el PR es manual. No se valida Node/PAT."
 fi

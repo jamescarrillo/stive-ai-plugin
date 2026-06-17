@@ -54,7 +54,7 @@ La primera vez en un repo, pídele a `stive-sdlc`: **`/init`**. Presenta **2 sel
 |---|---|---|---|
 | `atlassian` | Remoto (HTTP, Atlassian) | `jira.mode` = `remote` | VS Code abre **OAuth en el navegador** la 1ª vez. No requiere token. |
 | `jira-local` | Local (Python) | `jira.mode` = `local` | VS Code ejecuta `scripts/jira_mcp_server.py` con **API token** (env vars). |
-| `github` | Local (npx) | `github.createPr` = `true` | VS Code lanza `npx` bajo demanda; requiere **`GITHUB_TOKEN`** y Node.js. |
+| `github` | Remoto (HTTP, oficial de GitHub) | `github.createPr` = `true` | `https://api.githubcopilot.com/mcp/` con tu **`GITHUB_TOKEN`** (Bearer). |
 
 > No se arrancan a mano — VS Code gestiona el ciclo de vida.
 
@@ -65,7 +65,7 @@ La primera vez en un repo, pídele a `stive-sdlc`: **`/init`**. Presenta **2 sel
 | `jira.mode = remote` | Conexión a `mcp.atlassian.com` + autorizar el OAuth. **Nada de tokens.** |
 | `jira.mode = local` | Python 3.8+ con `requests` (`pip install -r scripts/requirements.txt`) y las env vars `JIRA_BASE_URL`, `JIRA_USER_EMAIL`, `JIRA_API_TOKEN`. |
 | `github.createPr = false` | Nada extra (commit local, PR manual). |
-| `github.createPr = true` | Node.js + `GITHUB_TOKEN` (PAT con scope `repo`). |
+| `github.createPr = true` | `GITHUB_TOKEN` (PAT con scope `repo`). |
 
 Siempre: estar dentro de un repo git. Verifica con **`verifica requisitos`** (el pre-flight valida solo lo que tu config necesita).
 
@@ -85,7 +85,7 @@ El MCP **remoto** no requiere token (usa OAuth). El **script local** sí — út
 
 ### Nota sobre GitHub
 
-`github.createPr` está en `false` (commit local) por defecto porque muchas cuentas corporativas **no permiten generar PAT**. Si la tuya sí: crea un PAT (scope `repo`), ponlo en la env var `GITHUB_TOKEN` y elige `PR` en `/init` (`github.createPr = true`). El paquete `@modelcontextprotocol/server-github` está deprecado pero funciona vía npx; alternativa oficial: MCP remoto `https://api.githubcopilot.com/mcp` o el binario `github-mcp-server`.
+`github.createPr` está en `false` (commit local) por defecto, así Stive funciona de inmediato sin configurar credenciales de GitHub. Para que cree el PR automáticamente: genera un PAT (scope `repo`), ponlo en la env var `GITHUB_TOKEN` y elige `PR` en `/init` (`github.createPr = true`). Stive usa el **servidor MCP oficial de GitHub** (remoto, `https://api.githubcopilot.com/mcp/`) — no requiere instalar nada localmente.
 
 ## Cómo configurar el entorno y usarlo
 
@@ -144,7 +144,7 @@ HU de migración       → spring-to-quarkus
 
 ```
 plugin.json                      ← Manifiesto: declara las carpetas de agentes, las raíces de skills y .mcp.json
-.mcp.json                        ← Config MCP: atlassian (remoto) · jira-local (script) · github (npx)
+.mcp.json                        ← Config MCP: atlassian (remoto) · jira-local (script) · github (HTTP oficial)
 agents/
   stive-sdlc/                    ← Orquestador SDLC (PICKER)
     stive-sdlc.agent.md            entry visible
@@ -222,11 +222,12 @@ Sale con código `!= 0` si hay errores. Ideal como pre-commit hook.
 
 ```
 stive-sdlc.agent.md (orquestador del flujo)
-  ↓ PASO 2 detecta framework + projectStructure
+  ↓ /init configura (jira.mode, github.createPr) + gate de requisitos
+  ↓ PASO 2 detecta framework (+ versión) + projectStructure
   ↓ spec-generator produce el spec técnico
   ↓ plan-generator elige el sub-agente + crea tasks.json
   ↓ [spring-engineer | quarkus-engineer | spring-to-quarkus] implementa
-  ↓ pr-creator crea el PR y actualiza JIRA
+  ↓ Etapa 4: PR (si github.createPr) o commit local; actualiza JIRA a IN_REVIEW
 ```
 
 ## Artefactos generados (en el repo destino)

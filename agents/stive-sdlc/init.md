@@ -85,7 +85,7 @@ Responde 1 (commit) o 2 (PR).
 
   1. Crea un Personal Access Token (scope "repo"):
      https://github.com/settings/tokens  → Generate new token.
-     (Si tu cuenta es corporativa y NO permite PAT, elige "commit" — no podrás crear PR.)
+     (Si no puedes generar un PAT, elige "commit" — Stive hará el commit local.)
   2. Expórtalo (y en tu perfil ~/.zshrc / ~/.bashrc):
 
      export GITHUB_TOKEN="EL-PAT"

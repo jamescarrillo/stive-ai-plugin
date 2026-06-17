@@ -87,7 +87,7 @@ Cuando el usuario diga `"hola"`, `"qué puedes hacer"`, `"qué eres"`, `"help"` 
 
 Cuando el usuario escriba `/init`, `init`, `configura` o `inicializa stive`:
 
-Aplica el procedimiento de **`agents/stive-sdlc/init.md`**: presenta **2 selectores** que el usuario confirma — (1) tipo de JIRA `remoto`/`local` (y prueba la conexión), (2) GitHub `PR`/`commit` (default `commit`) — escribe `.github/stive.config.json` y crea las carpetas de artefactos (`.github/specs`, `.github/specs/.metadata`, `.github/plans`). Termina sugiriendo `verifica requisitos`.
+Aplica el procedimiento de **`agents/stive-sdlc/init.md`**: presenta **2 selectores** que el usuario confirma — (1) tipo de JIRA `remoto`/`local`, (2) GitHub `PR`/`commit` (default `commit`). **Según lo elegido, valida las env vars requeridas** (`local` → JIRA_BASE_URL/USER_EMAIL/API_TOKEN + test de auth real; `PR` → GITHUB_TOKEN) y **si faltan, asiste al usuario** con los pasos para generarlas (no solo avisa). Luego escribe `.github/stive.config.json` y crea las carpetas (`.github/specs`, `.github/specs/.metadata`, `.github/plans`). Termina sugiriendo `verifica requisitos`.
 
 > Si el usuario intenta `implementa`/`continúa` y **no existe** `.github/stive.config.json`, ofrece correr `/init` primero (o continúa con defaults `remote`/`commit` avisando).
 

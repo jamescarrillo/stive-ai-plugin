@@ -54,7 +54,21 @@ except Exception as e:
 PY
 fi
 ```
-Si la prueba falla, **avisar** pero permitir continuar (el usuario puede corregir y reintentar con `verifica requisitos`).
+**Si faltan env vars o el token no autentica → ASISTIR (no solo avisar).** Mostrar el asistente y **esperar** a que el usuario las configure; luego re-ejecutar el test:
+```
+⚠️ Para JIRA local faltan/ fallan: [lista]. Te ayudo a configurarlo:
+
+  1. Genera un API token: https://id.atlassian.com/manage-profile/security/api-tokens
+     → "Create API token" → cópialo.
+  2. Exporta las variables en tu shell (y en tu perfil ~/.zshrc o ~/.bashrc para que persistan):
+
+     export JIRA_BASE_URL="https://TU-DOMINIO.atlassian.net"
+     export JIRA_USER_EMAIL="TU-CORREO"
+     export JIRA_API_TOKEN="EL-TOKEN"
+
+  3. Reinicia VS Code (para que el MCP tome las variables) y dime "listo" para re-validar.
+```
+> En VS Code, las env vars deben estar en el entorno que ve el plugin. Tras configurarlas, repetir el test del Selector 1. Solo continuar cuando autentique (o si el usuario decide seguir y corregir luego con `verifica requisitos`).
 
 ### Selector 2 — GitHub (PR o commit)
 ```
@@ -63,7 +77,22 @@ Al terminar la implementación, ¿qué hace Stive?
   2) PR      → crea el Pull Request en GitHub (requiere un PAT en GITHUB_TOKEN).
 Responde 1 (commit) o 2 (PR).
 ```
-→ mapear a `GITHUB_CREATE_PR = false | true`. Si elige `PR`, advertir: si la cuenta es corporativa y no permite PAT, fallará; puede quedar en `commit`.
+→ mapear a `GITHUB_CREATE_PR = false | true`.
+
+**Si elige `PR`, validar `GITHUB_TOKEN`** (`printenv GITHUB_TOKEN`). **Si falta → ASISTIR:**
+```
+⚠️ Para crear PR falta GITHUB_TOKEN. Te ayudo:
+
+  1. Crea un Personal Access Token (scope "repo"):
+     https://github.com/settings/tokens  → Generate new token.
+     (Si tu cuenta es corporativa y NO permite PAT, elige "commit" — no podrás crear PR.)
+  2. Expórtalo (y en tu perfil ~/.zshrc / ~/.bashrc):
+
+     export GITHUB_TOKEN="EL-PAT"
+
+  3. Reinicia VS Code y dime "listo" para continuar.
+```
+> Si la cuenta no permite generar PAT, recomendar volver al Selector 2 y elegir `commit`. No fijar `createPr=true` si no hay token (el flujo fallaría en Etapa 4).
 
 ### Escribir config + crear carpetas
 ```python

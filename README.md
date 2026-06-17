@@ -8,27 +8,60 @@ Plugin de **agentes de IA para el SDLC de microservicios Java** (Spring Boot 3.x
 
 Pasa este repositorio al instalador de Agent Plugins de VS Code. El plugin queda registrado bajo `~/.copilot/installed-plugins/` y sus agentes aparecen en el picker del chat de Copilot.
 
-## Servidores MCP
+## Configuración (`/init`) y servidores MCP
 
-El plugin declara dos servidores MCP en **`.mcp.json`** (enlazado desde `plugin.json` con `"mcpServers": ".mcp.json"`):
+La primera vez en un repo, pídele a `stive-sdlc`: **`/init`**. Te pregunta tus preferencias, crea `.github/stive.config.json` y las carpetas de artefactos. **Los requisitos a cumplir dependen de esta config.**
 
-| Servidor | Tipo | Para qué | Cómo arranca |
+```json
+{ "jira": { "mode": "auto" }, "github": { "enabled": false } }
+```
+
+| Opción | Valores | Significado |
+|---|---|---|
+| `jira.mode` | `auto` (default) | Intenta el MCP remoto de Atlassian; si no conecta (proxy/restricciones), cae al **script local**. |
+| | `mcp` | Solo Atlassian remoto (OAuth). |
+| | `script` | Solo el script local `scripts/jira_mcp_server.py` (API token). |
+| `github.enabled` | `false` (default) | El PR **no** es parte del flujo: Etapa 4 hace **commit en la rama local** y el PR lo creas tú. |
+| | `true` | Stive crea el PR vía GitHub MCP (requiere un PAT en `GITHUB_TOKEN`). |
+
+### Servidores MCP declarados (`.mcp.json`)
+
+| Servidor | Tipo | Se usa cuando | Cómo arranca |
 |---|---|---|---|
-| `atlassian` | **Remoto** (HTTP, hosted por Atlassian) | JIRA: leer la HU, transicionar estados | No se arranca: VS Code se conecta al endpoint remoto y abre **OAuth en el navegador** la primera vez. |
-| `github` | **Local (npx)** | Crear PR, push, ramas | VS Code lanza `npx` **bajo demanda** cuando un agente lo invoca. |
+| `atlassian` | Remoto (HTTP, Atlassian) | `jira.mode` = `mcp` o `auto` (con conexión) | VS Code abre **OAuth en el navegador** la 1ª vez. No requiere token. |
+| `jira-local` | Local (Python) | `jira.mode` = `script`, o `auto` sin conexión al remoto | VS Code ejecuta `scripts/jira_mcp_server.py` con **API token** (env vars). |
+| `github` | Local (npx) | `github.enabled` = `true` | VS Code lanza `npx` bajo demanda; requiere **`GITHUB_TOKEN`** y Node.js. |
 
-> No hay que arrancar los MCP a mano — VS Code gestiona su ciclo de vida. El remoto está siempre disponible (solo te autenticas); el de `npx` se levanta solo al usarlo.
+> No se arrancan a mano — VS Code gestiona el ciclo de vida.
 
-### Configuración previa (una vez)
+### Requisitos según tu config
 
-1. **GitHub (npx):** reemplaza `<TU_GITHUB_PAT>` en `.mcp.json` por tu Personal Access Token (scope `repo`). La primera invocación descarga el paquete vía npx, así que necesitas **Node.js** instalado.
-2. **JIRA (remoto):** no lleva token en el archivo. Al primer uso (ej. `getVisibleJiraProjects`), VS Code abre el **flujo OAuth de Atlassian** en el navegador para que autorices.
+| Si tu config es… | Necesitas |
+|---|---|
+| `jira.mode = mcp` | Conexión a `mcp.atlassian.com` + autorizar el OAuth. **Nada de tokens.** |
+| `jira.mode = script` (o `auto` sin red al remoto) | Python 3.8+ con `requests` (`pip install -r scripts/requirements.txt`) y las env vars `JIRA_BASE_URL`, `JIRA_USER_EMAIL`, `JIRA_API_TOKEN`. |
+| `github.enabled = false` | Nada extra (commit local, PR manual). |
+| `github.enabled = true` | Node.js + `GITHUB_TOKEN` (PAT con scope `repo`). |
 
-### Verificar que está listo
+Siempre: estar dentro de un repo git. Verifica con **`verifica requisitos`** (el pre-flight valida solo lo que tu config necesita).
 
-Pídele a `stive-sdlc`: **`"verifica requisitos"`** → corre el pre-flight (`agents/stive-sdlc/preflight.md`), que comprueba que el MCP de Atlassian sea alcanzable y que Node.js esté disponible para el de GitHub.
+### Generar un API token de Atlassian (para `jira.mode = script`)
 
-> **Nota sobre el paquete de GitHub:** `@modelcontextprotocol/server-github` está **deprecado** (movido a `github/github-mcp-server`), pero sigue funcionando vía npx para las operaciones que usa Stive (PR, push, ramas). Si en el futuro quieres dejar npx, la alternativa oficial es el MCP remoto `https://api.githubcopilot.com/mcp` o el binario `github-mcp-server` (Docker).
+El MCP **remoto** no requiere token (usa OAuth). El **script local** sí — útil en entornos donde el OAuth/MCP remoto está bloqueado pero la cuenta sí permite API tokens:
+
+1. Ve a **https://id.atlassian.com/manage-profile/security/api-tokens**.
+2. **Create API token** → ponle un nombre (ej. `stive`) → copia el token.
+3. Exporta las env vars (en tu shell / perfil):
+   ```bash
+   export JIRA_BASE_URL="https://tu-dominio.atlassian.net"
+   export JIRA_USER_EMAIL="tu-correo@empresa.com"
+   export JIRA_API_TOKEN="<token-pegado>"
+   ```
+4. `pip install -r scripts/requirements.txt` y corre `verifica requisitos`.
+
+### Nota sobre GitHub
+
+`github.enabled` está en `false` por defecto porque muchas cuentas corporativas **no permiten generar PAT**. Si la tuya sí: crea un PAT (scope `repo`), ponlo en la env var `GITHUB_TOKEN` y activa `github.enabled = true` con `/init`. El paquete `@modelcontextprotocol/server-github` está deprecado pero funciona vía npx; alternativa oficial: MCP remoto `https://api.githubcopilot.com/mcp` o el binario `github-mcp-server`.
 
 ## Agentes del picker
 
@@ -59,11 +92,11 @@ HU de migración       → spring-to-quarkus
 
 ```
 plugin.json                      ← Manifiesto: declara las carpetas de agentes, las raíces de skills y .mcp.json
-.mcp.json                        ← Config MCP: atlassian (JIRA remoto) + github (npx)
+.mcp.json                        ← Config MCP: atlassian (remoto) · jira-local (script) · github (npx)
 agents/
   stive-sdlc/                    ← Orquestador SDLC (PICKER)
     stive-sdlc.agent.md            entry visible
-    preflight.md · detection.md · reference.md   (user-invocable: false)
+    init.md · preflight.md · detection.md · reference.md   (user-invocable: false)
   stive-auditor/                 ← Auditor / backlog (PICKER)
     stive-auditor.agent.md         entry visible
   spring-engineer/               ← Sub-agente Spring Boot (oculto)

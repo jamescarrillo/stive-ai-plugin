@@ -222,11 +222,12 @@ Sale con código `!= 0` si hay errores. Ideal como pre-commit hook.
 
 ```
 stive-sdlc.agent.md (orquestador del flujo)
-  ↓ PASO 2 detecta framework + projectStructure
+  ↓ /init configura (jira.mode, github.createPr) + gate de requisitos
+  ↓ PASO 2 detecta framework (+ versión) + projectStructure
   ↓ spec-generator produce el spec técnico
   ↓ plan-generator elige el sub-agente + crea tasks.json
   ↓ [spring-engineer | quarkus-engineer | spring-to-quarkus] implementa
-  ↓ pr-creator crea el PR y actualiza JIRA
+  ↓ Etapa 4: PR (si github.createPr) o commit local; actualiza JIRA a IN_REVIEW
 ```
 
 ## Artefactos generados (en el repo destino)

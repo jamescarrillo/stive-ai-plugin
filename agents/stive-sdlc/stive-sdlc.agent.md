@@ -108,6 +108,38 @@ Aplica el skill **`init`** (también invocable como `/stive-ai:init`): presenta 
 
 ---
 
+## Control de flujo (panel de estado) — OBLIGATORIO
+
+Stive lleva un **control explícito** de cada prerrequisito y etapa, persistido en el metadata y **mostrado al usuario al inicio de cada acción** (`implementa`/`continúa`). Sirve para no saltarse pasos.
+
+**Persistir en `.github/specs/.metadata/HU-XXX.json` un objeto `control`:**
+```json
+"control": {
+  "config":       false,   // existe .github/stive.config.json
+  "preflight":    false,   // pre-flight en verde
+  "jiraStarted":  false,   // MCP de JIRA iniciado ("Start it now?" aceptado)
+  "jiraConnected":false,   // getVisibleJiraProjects respondió OK (OAuth/token válido)
+  "stage": "—"             // spec | plan | code | pr  (etapa en curso)
+}
+```
+
+**Mostrar el panel SIEMPRE al empezar a atender una HU** (y tras cada checkpoint):
+```
+╔══════ CONTROL DE FLUJO — SCRUM-XX ══════════════════╗
+║  [✅/⛔] Config        .github/stive.config.json     ║
+║  [✅/⛔] Pre-flight    entorno según config          ║
+║  [✅/⛔] MCP JIRA      iniciado + conectado          ║
+║  Etapas:  [⏳/✅] Spec → Plan → Código → PR/commit   ║
+╚═════════════════════════════════════════════════════╝
+```
+
+**Reglas del control (bloqueantes):**
+1. Cada prerrequisito se **verifica de verdad** (no se asume) y se marca en el panel **antes** de avanzar.
+2. **No se avanza** a un paso si su prerrequisito está en ⛔: Config → Pre-flight → MCP JIRA conectado → Etapa 1 … Cada uno **exige** el anterior en verde.
+3. El panel se **actualiza y re-muestra** tras cada gate, conexión y checkpoint, para que el usuario vea el avance real en todo momento.
+
+---
+
 ## PASO 0 — Gate obligatorio (config + pre-flight)
 
 **Ejecutar SIEMPRE al recibir `implementa`, `continúa` o `verifica requisitos`. Es un gate: no se puede saltar.**
@@ -191,7 +223,7 @@ getVisibleJiraProjects()      # vía atlassian | jira-local según config
 ```
 - En `remote`, **aquí se abre el OAuth** (1ª vez) → pídele al usuario autorizar en el navegador y **espera** a que confirme.
 - Si el tool **no está disponible**, falla, o no devuelve datos → **DETENER**: `❌ No pude conectar con JIRA (inicia/autoriza el MCP atlassian o revisa el API token).` **No escribas nada.**
-- Si conecta → `✅ Conectado a JIRA (<host/usuario>)` y sigue.
+- Si conecta → `✅ Conectado a JIRA (<host/usuario>)`, **marca en el metadata** `control.jiraStarted=true`, `control.jiraConnected=true`, **re-muestra el panel de control** y sigue.
 
 **1.1 — Leer la HU (datos REALES) y escribir spec inicial:**
 ```

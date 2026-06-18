@@ -6,11 +6,11 @@ user-invocable: false
 
 # Stive SDLC — PASO 0: Pre-flight (validación de entorno, según config)
 
-> Referenciado por `agents/stive-sdlc/stive-sdlc.agent.md`. Ejecutar al recibir `implementa`, `continúa` o `verifica requisitos`. **Valida solo lo que la configuración (`/init`) requiere.** Si hay errores → detener, no continuar a PASO 1.
+> Referenciado por `agents/stive-sdlc/stive-sdlc.agent.md`. Ejecutar al recibir `implementa`, `continúa` o `verifica requisitos`. **Valida solo lo que la configuración (`init`) requiere.** Si hay errores → detener, no continuar a PASO 1.
 
 ## PASO 0 — Pre-flight config-aware
 
-Lee `.github/stive.config.json` (si no existe, usa defaults `jira.mode=remote`, `github.createPr=false` y sugiere correr `/init`). Valida según la selección.
+Lee `.github/stive.config.json` (si no existe, usa defaults `jira.mode=remote`, `github.createPr=false` y sugiere correr `init`). Valida según la selección.
 
 ```bash
 PREFLIGHT_ERRORS=0
@@ -22,7 +22,7 @@ if [ -f ".github/stive.config.json" ]; then
   echo "  ⚙️  Config: jira.mode=$JIRA_MODE · github.createPr=$GITHUB_PR"
 else
   JIRA_MODE="remote"; GITHUB_PR="false"
-  echo "  ⚠️  Sin .github/stive.config.json — usando defaults (remote/commit). Corre /init para fijarla."
+  echo "  ⚠️  Sin .github/stive.config.json — usando defaults (remote/commit). Corre init para fijarla."
 fi
 
 # 1. Python 3.8+ (siempre)
@@ -39,8 +39,8 @@ git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
 # 3. JIRA — según jira.mode (remote | local)
 if [ "$JIRA_MODE" = "remote" ]; then
   python3 -c "import socket; socket.setdefaulttimeout(5); socket.socket().connect(('mcp.atlassian.com',443))" 2>/dev/null \
-    && echo "  ✅ JIRA(remote) → Atlassian alcanzable (OAuth en la 1ª llamada con getVisibleJiraProjects)" \
-    || { echo "  ❌ JIRA(remote) → no se alcanza mcp.atlassian.com (¿proxy/red?). Cambia a 'local' con /init si el OAuth está bloqueado."; PREFLIGHT_ERRORS=$((PREFLIGHT_ERRORS+1)); }
+    && echo "  ✅ JIRA(remote) → Atlassian alcanzable. ⚠️ Esto es solo alcance de RED; la AUTENTICACIÓN (OAuth) se confirma en la 1ª llamada real (Etapa 1.0 / getVisibleJiraProjects)." \
+    || { echo "  ❌ JIRA(remote) → no se alcanza mcp.atlassian.com (¿proxy/red?). Cambia a 'local' con init si el OAuth está bloqueado."; PREFLIGHT_ERRORS=$((PREFLIGHT_ERRORS+1)); }
 elif [ "$JIRA_MODE" = "local" ]; then
   JERR=0
   for v in JIRA_BASE_URL JIRA_USER_EMAIL JIRA_API_TOKEN; do
@@ -59,14 +59,14 @@ PY
     PREFLIGHT_ERRORS=$((PREFLIGHT_ERRORS+1))
   fi
 else
-  echo "  ❌ jira.mode desconocido: '$JIRA_MODE' (usa 'remote' o 'local' con /init)"; PREFLIGHT_ERRORS=$((PREFLIGHT_ERRORS+1))
+  echo "  ❌ jira.mode desconocido: '$JIRA_MODE' (usa 'remote' o 'local' con init)"; PREFLIGHT_ERRORS=$((PREFLIGHT_ERRORS+1))
 fi
 
 # 4. GitHub — solo si github.createPr=true (MCP remoto oficial de GitHub)
 if [ "$GITHUB_PR" = "true" ]; then
   [ -n "$(printenv GITHUB_TOKEN)" ] \
     && echo "  ✅ GITHUB_TOKEN presente" \
-    || { echo "  ❌ GITHUB_TOKEN ausente — define un PAT (scope 'repo') o elige 'commit' con /init"; PREFLIGHT_ERRORS=$((PREFLIGHT_ERRORS+1)); }
+    || { echo "  ❌ GITHUB_TOKEN ausente — define un PAT (scope 'repo') o elige 'commit' con init"; PREFLIGHT_ERRORS=$((PREFLIGHT_ERRORS+1)); }
   [ -n "$(git remote 2>/dev/null | head -1)" ] \
     && echo "  ✅ Remote git: $(git remote get-url $(git remote|head -1) 2>/dev/null)" \
     || { echo "  ❌ Sin remote git (necesario para el PR)"; PREFLIGHT_ERRORS=$((PREFLIGHT_ERRORS+1)); }

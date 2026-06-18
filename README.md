@@ -33,9 +33,11 @@ Es un **Agent Plugin de VS Code (preview)**. Hay dos formas de instalarlo; con c
 
 > Tras instalar, abre el **repo del microservicio** como carpeta raíz, selecciona `stive-sdlc` en el picker y sigue con *Cómo configurar el entorno y usarlo*.
 
-## Configuración (`/init`) y servidores MCP
+## Configuración (`init`) y servidores MCP
 
-La primera vez en un repo, pídele a `stive-sdlc`: **`/init`**. Presenta **2 selectores** que confirmas — tipo de JIRA y modo de GitHub — prueba la conexión, crea `.github/stive.config.json` y las carpetas de artefactos. **Los requisitos a cumplir dependen de esta config.**
+La primera vez en un repo, con `stive-sdlc` seleccionado, escribe **`init`** en el chat. Presenta **2 selectores** que confirmas — tipo de JIRA y modo de GitHub — prueba la conexión, crea `.github/stive.config.json` y las carpetas de artefactos. **Los requisitos a cumplir dependen de esta config.**
+
+> Dos formas de invocarlo: el **slash command `/stive-ai:init`** (los plugins exponen sus skills como `/<plugin>:<skill>`), o escribiendo **`init`** como texto plano con `stive-sdlc` seleccionado. Evita `/init` a secas: en GitHub Copilot el `/` está reservado para sus propios *slash commands*.
 
 ```json
 { "jira": { "mode": "remote" }, "github": { "createPr": false } }
@@ -85,18 +87,18 @@ El MCP **remoto** no requiere token (usa OAuth). El **script local** sí — út
 
 ### Nota sobre GitHub
 
-`github.createPr` está en `false` (commit local) por defecto, así Stive funciona de inmediato sin configurar credenciales de GitHub. Para que cree el PR automáticamente: genera un PAT (scope `repo`), ponlo en la env var `GITHUB_TOKEN` y elige `PR` en `/init` (`github.createPr = true`). Stive usa el **servidor MCP oficial de GitHub** (remoto, `https://api.githubcopilot.com/mcp/`) — no requiere instalar nada localmente.
+`github.createPr` está en `false` (commit local) por defecto, así Stive funciona de inmediato sin configurar credenciales de GitHub. Para que cree el PR automáticamente: genera un PAT (scope `repo`), ponlo en la env var `GITHUB_TOKEN` y elige `PR` en `init` (`github.createPr = true`). Stive usa el **servidor MCP oficial de GitHub** (remoto, `https://api.githubcopilot.com/mcp/`) — no requiere instalar nada localmente.
 
 ## Cómo configurar el entorno y usarlo
 
 ### A. Configurar el entorno (una vez por repo)
 1. **Instala el plugin** (ver *Instalación*) y abre el **repo del microservicio** como carpeta raíz en VS Code.
 2. En el chat de Copilot, **selecciona el agente `stive-sdlc`**.
-3. Ejecuta **`/init`** y responde los 2 selectores:
+3. Ejecuta **`init`** y responde los 2 selectores:
    - **JIRA**: `remoto` (OAuth) o `local` (API token).
    - **GitHub**: `commit` (default) o `PR`.
-   `/init` prueba la conexión y, **si faltan variables de entorno, te asiste para crearlas**.
-4. **Configura las env vars que tu selección requiera** (si `/init` te lo pidió):
+   `init` prueba la conexión y, **si faltan variables de entorno, te asiste para crearlas**.
+4. **Configura las env vars que tu selección requiera** (si `init` te lo pidió):
    - JIRA `local` → `JIRA_BASE_URL`, `JIRA_USER_EMAIL`, `JIRA_API_TOKEN` (ver *Generar un API token de Atlassian*).
    - GitHub `PR` → `GITHUB_TOKEN` (PAT scope `repo`).
    Ponlas en tu perfil (`~/.zshrc` / `~/.bashrc`) y **reinicia VS Code** para que el plugin las tome.
@@ -148,7 +150,7 @@ plugin.json                      ← Manifiesto: declara las carpetas de agentes
 agents/
   stive-sdlc/                    ← Orquestador SDLC (PICKER)
     stive-sdlc.agent.md            entry visible
-    init.md · preflight.md · detection.md · reference.md   (user-invocable: false)
+    preflight.md · detection.md · reference.md   (user-invocable: false)
   stive-auditor/                 ← Auditor / backlog (PICKER)
     stive-auditor.agent.md         entry visible
   spring-engineer/               ← Sub-agente Spring Boot (oculto)
@@ -161,7 +163,7 @@ agents/
     spring-to-quarkus.agent.md     (user-invocable: false)
     restructure-guide.md · dependency-mapping.md · migration-rules.md · checklist.md
 skills/                          ← Skills invocables por nombre (raíz + categorías declaradas en plugin.json)
-  spec-generator/ · plan-generator/ · pr-creator/ · tech-auditor/
+  init/ · spec-generator/ · plan-generator/ · pr-creator/ · tech-auditor/
   security/    → code-reviewer · domain-purity-checker · mock-strategist
   testing/     → coverage-enforcer · local-deployment-verifier · test-generator · test-runner
   spring-boot/ → spring-use-case-implementer · spring-webclient-configurator
@@ -222,7 +224,7 @@ Sale con código `!= 0` si hay errores. Ideal como pre-commit hook.
 
 ```
 stive-sdlc.agent.md (orquestador del flujo)
-  ↓ /init configura (jira.mode, github.createPr) + gate de requisitos
+  ↓ init configura (jira.mode, github.createPr) + gate de requisitos
   ↓ PASO 2 detecta framework (+ versión) + projectStructure
   ↓ spec-generator produce el spec técnico
   ↓ plan-generator elige el sub-agente + crea tasks.json

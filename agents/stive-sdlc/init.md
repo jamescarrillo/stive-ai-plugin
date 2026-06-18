@@ -4,9 +4,9 @@ description: Material de soporte de stive-sdlc (no es un agente seleccionable).
 user-invocable: false
 ---
 
-# Stive SDLC — Comando `/init`: configuración y scaffolding
+# Stive SDLC — Comando `init`: configuración y scaffolding
 
-> Referenciado por `agents/stive-sdlc/stive-sdlc.agent.md`. Se ejecuta cuando el usuario escribe `/init`, `init`, `configura` o `inicializa stive`. Pregunta dos selecciones (que el usuario confirma), prueba la conexión, guarda la config y crea las carpetas de artefactos.
+> Referenciado por `agents/stive-sdlc/stive-sdlc.agent.md`. Se ejecuta cuando el usuario escribe `init`, `init`, `configura` o `inicializa stive`. Pregunta dos selecciones (que el usuario confirma), prueba la conexión, guarda la config y crea las carpetas de artefactos.
 
 ## Esquema del config — `.github/stive.config.json`
 ```json
@@ -119,7 +119,7 @@ Siguiente: "verifica requisitos" (valida según tu config) o "implementa SCRUM-X
 ```
 
 ## Lectura del config (otros pasos del flujo)
-Si no existe, usar defaults `remote` / `createPr=false` e indicar que conviene correr `/init`.
+Si no existe, usar defaults `remote` / `createPr=false` e indicar que conviene correr `init`.
 ```python
 import json
 from pathlib import Path

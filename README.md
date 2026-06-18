@@ -33,9 +33,11 @@ Es un **Agent Plugin de VS Code (preview)**. Hay dos formas de instalarlo; con c
 
 > Tras instalar, abre el **repo del microservicio** como carpeta raíz, selecciona `stive-sdlc` en el picker y sigue con *Cómo configurar el entorno y usarlo*.
 
-## Configuración (`/init`) y servidores MCP
+## Configuración (`init`) y servidores MCP
 
-La primera vez en un repo, pídele a `stive-sdlc`: **`/init`**. Presenta **2 selectores** que confirmas — tipo de JIRA y modo de GitHub — prueba la conexión, crea `.github/stive.config.json` y las carpetas de artefactos. **Los requisitos a cumplir dependen de esta config.**
+La primera vez en un repo, con `stive-sdlc` seleccionado, escribe **`init`** en el chat. Presenta **2 selectores** que confirmas — tipo de JIRA y modo de GitHub — prueba la conexión, crea `.github/stive.config.json` y las carpetas de artefactos. **Los requisitos a cumplir dependen de esta config.**
+
+> ⚠️ Escribe **`init`** como texto plano (no `/init`). En GitHub Copilot el `/` está reservado para sus *slash commands*; `init` es un mensaje para el agente `stive-sdlc`, que también entiende `configura` o `inicializa stive`.
 
 ```json
 { "jira": { "mode": "remote" }, "github": { "createPr": false } }
@@ -85,18 +87,18 @@ El MCP **remoto** no requiere token (usa OAuth). El **script local** sí — út
 
 ### Nota sobre GitHub
 
-`github.createPr` está en `false` (commit local) por defecto, así Stive funciona de inmediato sin configurar credenciales de GitHub. Para que cree el PR automáticamente: genera un PAT (scope `repo`), ponlo en la env var `GITHUB_TOKEN` y elige `PR` en `/init` (`github.createPr = true`). Stive usa el **servidor MCP oficial de GitHub** (remoto, `https://api.githubcopilot.com/mcp/`) — no requiere instalar nada localmente.
+`github.createPr` está en `false` (commit local) por defecto, así Stive funciona de inmediato sin configurar credenciales de GitHub. Para que cree el PR automáticamente: genera un PAT (scope `repo`), ponlo en la env var `GITHUB_TOKEN` y elige `PR` en `init` (`github.createPr = true`). Stive usa el **servidor MCP oficial de GitHub** (remoto, `https://api.githubcopilot.com/mcp/`) — no requiere instalar nada localmente.
 
 ## Cómo configurar el entorno y usarlo
 
 ### A. Configurar el entorno (una vez por repo)
 1. **Instala el plugin** (ver *Instalación*) y abre el **repo del microservicio** como carpeta raíz en VS Code.
 2. En el chat de Copilot, **selecciona el agente `stive-sdlc`**.
-3. Ejecuta **`/init`** y responde los 2 selectores:
+3. Ejecuta **`init`** y responde los 2 selectores:
    - **JIRA**: `remoto` (OAuth) o `local` (API token).
    - **GitHub**: `commit` (default) o `PR`.
-   `/init` prueba la conexión y, **si faltan variables de entorno, te asiste para crearlas**.
-4. **Configura las env vars que tu selección requiera** (si `/init` te lo pidió):
+   `init` prueba la conexión y, **si faltan variables de entorno, te asiste para crearlas**.
+4. **Configura las env vars que tu selección requiera** (si `init` te lo pidió):
    - JIRA `local` → `JIRA_BASE_URL`, `JIRA_USER_EMAIL`, `JIRA_API_TOKEN` (ver *Generar un API token de Atlassian*).
    - GitHub `PR` → `GITHUB_TOKEN` (PAT scope `repo`).
    Ponlas en tu perfil (`~/.zshrc` / `~/.bashrc`) y **reinicia VS Code** para que el plugin las tome.
@@ -222,7 +224,7 @@ Sale con código `!= 0` si hay errores. Ideal como pre-commit hook.
 
 ```
 stive-sdlc.agent.md (orquestador del flujo)
-  ↓ /init configura (jira.mode, github.createPr) + gate de requisitos
+  ↓ init configura (jira.mode, github.createPr) + gate de requisitos
   ↓ PASO 2 detecta framework (+ versión) + projectStructure
   ↓ spec-generator produce el spec técnico
   ↓ plan-generator elige el sub-agente + crea tasks.json

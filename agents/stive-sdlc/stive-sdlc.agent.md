@@ -108,16 +108,49 @@ Aplica el skill **`init`** (también invocable como `/stive-ai:init`): presenta 
 
 ---
 
+## Control de flujo (panel de estado) — OBLIGATORIO
+
+Stive lleva un **control explícito** de cada prerrequisito y etapa, persistido en el metadata y **mostrado al usuario al inicio de cada acción** (`implementa`/`continúa`). Sirve para no saltarse pasos.
+
+**Persistir en `.github/specs/.metadata/HU-XXX.json` un objeto `control`:**
+```json
+"control": {
+  "config":       false,   // existe .github/stive.config.json
+  "preflight":    false,   // pre-flight en verde
+  "jiraStarted":  false,   // MCP de JIRA iniciado ("Start it now?" aceptado)
+  "jiraConnected":false,   // getVisibleJiraProjects respondió OK (OAuth/token válido)
+  "stage": "—"             // spec | plan | code | pr  (etapa en curso)
+}
+```
+
+**Mostrar el panel SIEMPRE al empezar a atender una HU** (y tras cada checkpoint):
+```
+╔══════ CONTROL DE FLUJO — SCRUM-XX ══════════════════╗
+║  [✅/⛔] Config        .github/stive.config.json     ║
+║  [✅/⛔] Pre-flight    entorno según config          ║
+║  [✅/⛔] MCP JIRA      iniciado + conectado          ║
+║  Etapas:  [⏳/✅] Spec → Plan → Código → PR/commit   ║
+╚═════════════════════════════════════════════════════╝
+```
+
+**Reglas del control (bloqueantes):**
+1. Cada prerrequisito se **verifica de verdad** (no se asume) y se marca en el panel **antes** de avanzar.
+2. **No se avanza** a un paso si su prerrequisito está en ⛔: Config → Pre-flight → MCP JIRA conectado → Etapa 1 … Cada uno **exige** el anterior en verde.
+3. El panel se **actualiza y re-muestra** tras cada gate, conexión y checkpoint, para que el usuario vea el avance real en todo momento.
+
+---
+
 ## PASO 0 — Gate obligatorio (config + pre-flight)
 
 **Ejecutar SIEMPRE al recibir `implementa`, `continúa` o `verifica requisitos`. Es un gate: no se puede saltar.**
 
 **Gate 1 — Config existe (solo para `implementa`/`continúa`):**
-Si **no existe** `.github/stive.config.json` → **DETENER**. No iniciar la implementación. Responder:
+Si **no existe** `.github/stive.config.json` → **NO inicies la implementación**. Avisa y **redirige al init**:
 ```
-⛔ Este repo no está configurado. Corre  init  antes de implementar una HU
-   (define cómo conectar a JIRA y si crea PR o commit, y valida tus requisitos).
+⛔ Este repo no está configurado todavía. Primero hay que correr  init.
+   Lo lanzo ahora para configurar JIRA y GitHub; al terminar, retomamos SCRUM-XX.
 ```
+Y a continuación **aplica el skill `init`** (los 2 selectores + validación). Cuando el init termine y exista `.github/stive.config.json`, retoma la HU desde el Gate 2. **No saltes el init.**
 
 **Gate 2 — Pre-flight según config:**
 Ejecuta el script de **`agents/stive-sdlc/preflight.md`** (valida solo lo que tu config requiere: JIRA remoto/local, GitHub PR/commit). Si `PREFLIGHT_ERRORS > 0` → **DETENER** y mostrar el reporte correctivo (asistiendo a configurar lo que falte, como en `init`).
@@ -182,28 +215,29 @@ Sigue el procedimiento de **`agents/stive-sdlc/detection.md`**: detecta `framewo
 
 > **Conexión a JIRA según `jira.mode` (config):** si es `remote`, llama a los tools del servidor **`atlassian`** (`atlassian/getJiraIssueDetails`, ...); si es `local`, llama a los **mismos nombres** en el servidor **`jira-local`** (`jira-local/getJiraIssueDetails`, ...), que envuelve `scripts/jira_mcp_server.py`. La lógica del flujo es idéntica; solo cambia el servidor MCP.
 
-**1.0 — Confirmar conexión a JIRA (visible, ANTES de leer la HU).**
-Anuncia `🔌 Conectando a JIRA…` y haz una llamada **real** al servidor configurado:
+**1.0 — Asegurar el MCP iniciado + confirmar conexión (ANTES de leer la HU).**
+1. El servidor MCP de JIRA (`atlassian` o `jira-local`) **debe estar INICIADO**. Si VS Code muestra *"The MCP server atlassian … requires interaction to start. Start it now?"*, **dile al usuario que acepte (Start)** y espera. Sin el servidor iniciado **no existen los tools de JIRA**.
+2. Anuncia `🔌 Conectando a JIRA…` y haz una llamada **real**:
 ```
 getVisibleJiraProjects()      # vía atlassian | jira-local según config
 ```
-- En `remote`, **aquí se abre el OAuth** si es la primera vez → indícale al usuario que autorice en el navegador y **espera**.
-- Si la llamada falla o no devuelve datos → **DETENER**: `❌ No pude conectar con JIRA. Revisa el OAuth/credenciales (verifica requisitos).` **No continúes.**
-- Si conecta → muestra `✅ Conectado a JIRA (<host/usuario>)` y sigue.
+- En `remote`, **aquí se abre el OAuth** (1ª vez) → pídele al usuario autorizar en el navegador y **espera** a que confirme.
+- Si el tool **no está disponible**, falla, o no devuelve datos → **DETENER**: `❌ No pude conectar con JIRA (inicia/autoriza el MCP atlassian o revisa el API token).` **No escribas nada.**
+- Si conecta → `✅ Conectado a JIRA (<host/usuario>)`, **marca en el metadata** `control.jiraStarted=true`, `control.jiraConnected=true`, **re-muestra el panel de control** y sigue.
 
 **1.1 — Leer la HU (datos REALES) y escribir spec inicial:**
 ```
 getJiraIssueDetails(issueIdOrKey: "HU-XXX")   # vía servidor atlassian | jira-local según config
-→ Parsear título, descripción (ADF), criterios de aceptación
-→ Escribir .github/specs/HU-XXX.md usando la estructura base de `templates/HU-TEMPLATE.md`
-→ Actualizar .github/specs/.metadata/HU-XXX.json (cargar el existente de PASO 2 y añadir):
-    status: "spec_generated"
-    atlassian_base_url: host extraído del campo `self`/url del issue devuelto por el MCP
+→ Parsear título, descripción (ADF), criterios de aceptación REALES
+→ Escribir .github/specs/HU-XXX.md  (rellenando con esos datos)
+→ Actualizar .github/specs/.metadata/HU-XXX.json: status="spec_generated", atlassian_base_url
 ```
 
-> 🚫 **Regla anti-invención (crítica):** el spec se construye **solo** con los datos que devolvió `getJiraIssueDetails`. Si la llamada **falla, no devuelve la HU, o devuelve vacío → DETENER** y reportar el error; **NUNCA** inventes/asumas título, descripción ni criterios.
+> 📄 **`templates/HU-TEMPLATE.md` es SOLO la estructura** (los títulos de sección). **NO** es contenido: cada campo (título, descripción, criterios, etc.) se rellena con lo que devolvió `getJiraIssueDetails`. **Jamás** escribas los placeholders del template como si fueran la HU.
 >
-> ✅ **Confirmación visible:** tras leer, muestra al usuario un resumen de lo recibido (clave, **título real**, estado JIRA, nº de criterios de aceptación) para que **vea que se leyó de JIRA de verdad** antes del Checkpoint 1.
+> 🚫 **Regla anti-invención (crítica, bloqueante):** **NO escribas el archivo de spec** hasta haber recibido datos reales de `getJiraIssueDetails`. Si la llamada **falla, no devuelve la HU, o devuelve vacío → DETENER** y reportar el error; **NUNCA** inventes/asumas/uses el template como contenido. Sin datos de JIRA **no hay spec**.
+>
+> ✅ **Confirmación visible:** tras leer, muestra un resumen de lo recibido (clave, **título real**, estado JIRA, nº de criterios) para que el usuario **vea que se leyó de JIRA de verdad** antes del Checkpoint 1.
 
 **1.2** Enriquecer con spec-generator:
 ```

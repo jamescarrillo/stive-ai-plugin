@@ -80,7 +80,13 @@ meta = {
     "detectedBasePackage": BASE_PACKAGE,
     "hexDomainDir": HEX_DOMAIN_DIR or "domain",
     "hexPortsDir": HEX_PORTS_DIR or "ports",
-    "hexAdaptersDir": HEX_ADAPTERS_DIR or "adapters"
+    "hexAdaptersDir": HEX_ADAPTERS_DIR or "adapters",
+    # Panel de control (ver "Control de flujo" en el agente). Aquí ya pasó el
+    # gate (config+preflight); la conexión MCP se confirma en Etapa 1.0.
+    "control": {
+        "config": True, "preflight": True, "jiraStarted": False,
+        "jiraConnected": False, "stage": "spec"
+    }
 }
 Path(f".github/specs/.metadata/{HU_KEY}.json").write_text(json.dumps(meta, indent=2))
 ```

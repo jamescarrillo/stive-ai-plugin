@@ -37,7 +37,7 @@ Es un **Agent Plugin de VS Code (preview)**. Hay dos formas de instalarlo; con c
 
 La primera vez en un repo, con `stive-sdlc` seleccionado, escribe **`init`** en el chat. Presenta **2 selectores** que confirmas — tipo de JIRA y modo de GitHub — prueba la conexión, crea `.github/stive.config.json` y las carpetas de artefactos. **Los requisitos a cumplir dependen de esta config.**
 
-> ⚠️ Escribe **`init`** como texto plano (no `/init`). En GitHub Copilot el `/` está reservado para sus *slash commands*; `init` es un mensaje para el agente `stive-sdlc`, que también entiende `configura` o `inicializa stive`.
+> Dos formas de invocarlo: el **slash command `/stive-ai:init`** (los plugins exponen sus skills como `/<plugin>:<skill>`), o escribiendo **`init`** como texto plano con `stive-sdlc` seleccionado. Evita `/init` a secas: en GitHub Copilot el `/` está reservado para sus propios *slash commands*.
 
 ```json
 { "jira": { "mode": "remote" }, "github": { "createPr": false } }
@@ -150,7 +150,7 @@ plugin.json                      ← Manifiesto: declara las carpetas de agentes
 agents/
   stive-sdlc/                    ← Orquestador SDLC (PICKER)
     stive-sdlc.agent.md            entry visible
-    init.md · preflight.md · detection.md · reference.md   (user-invocable: false)
+    preflight.md · detection.md · reference.md   (user-invocable: false)
   stive-auditor/                 ← Auditor / backlog (PICKER)
     stive-auditor.agent.md         entry visible
   spring-engineer/               ← Sub-agente Spring Boot (oculto)
@@ -163,7 +163,7 @@ agents/
     spring-to-quarkus.agent.md     (user-invocable: false)
     restructure-guide.md · dependency-mapping.md · migration-rules.md · checklist.md
 skills/                          ← Skills invocables por nombre (raíz + categorías declaradas en plugin.json)
-  spec-generator/ · plan-generator/ · pr-creator/ · tech-auditor/
+  init/ · spec-generator/ · plan-generator/ · pr-creator/ · tech-auditor/
   security/    → code-reviewer · domain-purity-checker · mock-strategist
   testing/     → coverage-enforcer · local-deployment-verifier · test-generator · test-runner
   spring-boot/ → spring-use-case-implementer · spring-webclient-configurator

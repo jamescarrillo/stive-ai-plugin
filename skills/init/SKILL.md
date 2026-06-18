@@ -1,12 +1,11 @@
 ---
-name: stive-sdlc-init
-description: Material de soporte de stive-sdlc (no es un agente seleccionable).
-user-invocable: false
+name: init
+description: Inicializa Stive en este repositorio — configura cómo conectar a JIRA (remoto/local) y si crea PR o commit, prueba la conexión y asiste con las variables de entorno, escribe .github/stive.config.json y crea las carpetas de artefactos. Úsalo la primera vez en un repo (slash `/stive-ai:init` o escribiendo `init` al agente stive-sdlc).
 ---
 
-# Stive SDLC — Comando `init`: configuración y scaffolding
+# Skill: init — Configuración y scaffolding de Stive
 
-> Referenciado por `agents/stive-sdlc/stive-sdlc.agent.md`. Se ejecuta cuando el usuario escribe `init`, `init`, `configura` o `inicializa stive`. Pregunta dos selecciones (que el usuario confirma), prueba la conexión, guarda la config y crea las carpetas de artefactos.
+Pregunta **2 selecciones** que el usuario confirma, prueba la conexión, guarda la config y crea las carpetas de artefactos. Invocable como `/stive-ai:init` o cuando el usuario escribe `init` / `configura` / `inicializa stive`.
 
 ## Esquema del config — `.github/stive.config.json`
 ```json
@@ -73,7 +72,7 @@ fi
 ### Selector 2 — GitHub (PR o commit)
 ```
 Al terminar la implementación, ¿qué hace Stive?
-  1) commit  → commit en la rama local; tú creas el PR. (Default, recomendado si no puedes generar PAT)
+  1) commit  → commit en la rama local; tú creas el PR. (Default)
   2) PR      → crea el Pull Request en GitHub (requiere un PAT en GITHUB_TOKEN).
 Responde 1 (commit) o 2 (PR).
 ```

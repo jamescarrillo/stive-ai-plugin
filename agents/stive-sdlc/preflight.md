@@ -39,7 +39,7 @@ git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
 # 3. JIRA — según jira.mode (remote | local)
 if [ "$JIRA_MODE" = "remote" ]; then
   python3 -c "import socket; socket.setdefaulttimeout(5); socket.socket().connect(('mcp.atlassian.com',443))" 2>/dev/null \
-    && echo "  ✅ JIRA(remote) → Atlassian alcanzable (OAuth en la 1ª llamada con getVisibleJiraProjects)" \
+    && echo "  ✅ JIRA(remote) → Atlassian alcanzable. ⚠️ Esto es solo alcance de RED; la AUTENTICACIÓN (OAuth) se confirma en la 1ª llamada real (Etapa 1.0 / getVisibleJiraProjects)." \
     || { echo "  ❌ JIRA(remote) → no se alcanza mcp.atlassian.com (¿proxy/red?). Cambia a 'local' con init si el OAuth está bloqueado."; PREFLIGHT_ERRORS=$((PREFLIGHT_ERRORS+1)); }
 elif [ "$JIRA_MODE" = "local" ]; then
   JERR=0

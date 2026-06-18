@@ -182,7 +182,16 @@ Sigue el procedimiento de **`agents/stive-sdlc/detection.md`**: detecta `framewo
 
 > **Conexión a JIRA según `jira.mode` (config):** si es `remote`, llama a los tools del servidor **`atlassian`** (`atlassian/getJiraIssueDetails`, ...); si es `local`, llama a los **mismos nombres** en el servidor **`jira-local`** (`jira-local/getJiraIssueDetails`, ...), que envuelve `scripts/jira_mcp_server.py`. La lógica del flujo es idéntica; solo cambia el servidor MCP.
 
-**1.1** Leer la HU y escribir spec inicial:
+**1.0 — Confirmar conexión a JIRA (visible, ANTES de leer la HU).**
+Anuncia `🔌 Conectando a JIRA…` y haz una llamada **real** al servidor configurado:
+```
+getVisibleJiraProjects()      # vía atlassian | jira-local según config
+```
+- En `remote`, **aquí se abre el OAuth** si es la primera vez → indícale al usuario que autorice en el navegador y **espera**.
+- Si la llamada falla o no devuelve datos → **DETENER**: `❌ No pude conectar con JIRA. Revisa el OAuth/credenciales (verifica requisitos).` **No continúes.**
+- Si conecta → muestra `✅ Conectado a JIRA (<host/usuario>)` y sigue.
+
+**1.1 — Leer la HU (datos REALES) y escribir spec inicial:**
 ```
 getJiraIssueDetails(issueIdOrKey: "HU-XXX")   # vía servidor atlassian | jira-local según config
 → Parsear título, descripción (ADF), criterios de aceptación
@@ -190,9 +199,11 @@ getJiraIssueDetails(issueIdOrKey: "HU-XXX")   # vía servidor atlassian | jira-l
 → Actualizar .github/specs/.metadata/HU-XXX.json (cargar el existente de PASO 2 y añadir):
     status: "spec_generated"
     atlassian_base_url: host extraído del campo `self`/url del issue devuelto por el MCP
-                        (ej. "https://tu-dominio.atlassian.net"). Lo usa pr-creator para
-                        el link a JIRA en el PR. Si la respuesta no lo trae, omitir el campo.
 ```
+
+> 🚫 **Regla anti-invención (crítica):** el spec se construye **solo** con los datos que devolvió `getJiraIssueDetails`. Si la llamada **falla, no devuelve la HU, o devuelve vacío → DETENER** y reportar el error; **NUNCA** inventes/asumas título, descripción ni criterios.
+>
+> ✅ **Confirmación visible:** tras leer, muestra al usuario un resumen de lo recibido (clave, **título real**, estado JIRA, nº de criterios de aceptación) para que **vea que se leyó de JIRA de verdad** antes del Checkpoint 1.
 
 **1.2** Enriquecer con spec-generator:
 ```
